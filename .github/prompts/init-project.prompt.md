@@ -24,31 +24,37 @@ Before asking anything:
 
 [PHASE 1: REQUIREMENTS INTERVIEW]
 
-Ask in the batches below. Don't dump all questions at once — present one batch, wait for answers, then move to the next. Accept "not sure" or "you decide" on any question and make a reasonable call, noting it as an open question for `docs/foundation.md` rather than blocking on it.
+Ask **one question at a time** — never more than one in a single message, and never a preview of what's coming next. Post the question, then stop and wait for the reply before asking the next one. The point is to make the user actually think about the question in front of them, not skim a list and dash off quick answers to all of them at once. Batching defeats that — don't do it, even if it feels slower.
 
-**Batch A — Identity & problem**
+The groupings below (Identity & problem, Shape, Stack, Constraints & conventions) are for your own organization, not something to expose to the user as a heading or a progress counter ("question 3 of 16") unless they ask where things stand.
+
+Accept "not sure" or "you decide" on any question and make a reasonable call, noting it as an open question for `docs/foundation.md` rather than blocking on it.
+
+**Identity & problem**
 1. Project name (public-facing, if different from the repo name)?
 2. One or two sentences: what does this do, and who is it for?
 3. What problem is it solving, and why does that problem matter? (This is the seed of `docs/foundation.md` — the more real detail here, the better that doc will be.)
 4. What does this project explicitly *not* do? (Scope boundaries save more time later than scope definitions do.)
 
-**Batch B — Shape**
+**Shape**
 5. What kind of thing is this: an end-user product (web/mobile app), an internal tool, a CLI, a library/package, an API/MCP server with no UI, or an integration/plugin against another platform?
 6. Does it need a persistent database? If yes, what kind (relational/PostgreSQL, document/Mongo, SQLite, none-yet-undecided)?
 7. Does it need a frontend/UI at all? If yes, what kind (web SPA, server-rendered, CLI-only, none)?
 8. Any other services it talks to — external APIs, queues, caches, auth providers, other systems in this user's homelab or accounts?
 
-**Batch C — Stack**
+**Stack**
 9. Primary language(s) and version?
 10. Backend/application framework, if any (or "none" for a library/CLI)?
 11. Frontend framework, if applicable?
 12. Test runner and linter/formatter of choice? (Offer a sensible default per language if the user has no preference — e.g. pytest + ruff for Python, vitest/jest + eslint for TS/JS — but don't assume FastAPI/React/Postgres; that was the old template default, not a rule.)
 13. Deployment target — Docker/homelab, a cloud provider, published package, sideloaded plugin, other?
 
-**Batch D — Constraints & conventions**
+**Constraints & conventions**
 14. Any non-negotiable constraints Claude must always respect in this repo? (Security/compliance boundaries, things never to build, data it must never touch, out-of-scope features adjacent projects tend to scope-creep into.)
 15. Naming/style conventions beyond the language's defaults, if the user has strong preferences?
 16. Anything scoring, ranking, or weighting-related in the domain logic? (Only relevant to some projects — skip if not applicable.)
+
+Skip a question outright if an earlier answer already made it moot (e.g. skip 7 and 11 if question 5 established this is a CLI) rather than asking it pro forma.
 
 [PHASE 2: SCAFFOLDING PLAN]
 
@@ -77,12 +83,12 @@ Once approved:
 
 Fill in every section of `CLAUDE.md` from the interview, removing the HTML-comment instructions as you go (per the file's own "How to fill this in" note):
 
-- **Project identity** — from Batch A
-- **Stack** — from Batch C, as a concrete list (not placeholders)
-- **Architecture** — top-level structure from Phase 2's plan, how the pieces connect, any pattern being enforced (e.g. adapter pattern for external services, if the constraints in Batch D call for one)
-- **Constraints (non-negotiable)** — verbatim from Batch D question 14, plus anything structurally implied by the answers (e.g. "never write to the DB from a read-only integration" if that's the shape of the project)
-- **Code style** — from Batch D question 15, plus language defaults
-- **Scoring / ranking logic** — from Batch D question 16, or delete the section if not applicable
+- **Project identity** — from the identity & problem answers
+- **Stack** — from the stack answers, as a concrete list (not placeholders)
+- **Architecture** — top-level structure from Phase 2's plan, how the pieces connect, any pattern being enforced (e.g. adapter pattern for external services, if the constraints in the constraints answers call for one)
+- **Constraints (non-negotiable)** — verbatim from question 14, plus anything structurally implied by the answers (e.g. "never write to the DB from a read-only integration" if that's the shape of the project)
+- **Code style** — from question 15, plus language defaults
+- **Scoring / ranking logic** — from question 16, or delete the section if not applicable
 - **Current state** — `### Done`: "Repo scaffolded from template, foundation.md and CLAUDE.md written." `### In progress`: empty. `### Not started`: the obvious next build steps implied by the interview (e.g. "first data model," "first endpoint")
 - **Open questions** — anything answered "not sure" / "you decide" in the interview
 - **Decision log** — one entry per stack/architecture choice made this session, in the file's existing `### ADR-NNN — Short title` format (even if no formal ADR file exists yet in `docs/ADRs/` — that's fine, it's a lightweight log entry, not a requirement to also write a full ADR)
@@ -100,16 +106,16 @@ Write a founding-brief document at `docs/foundation.md` — this is the project'
 ---
 
 ## The Problem
-{From Batch A Q3 — expand to real paragraphs, grounded in what the user actually said, not invented detail}
+{From question 3 — expand to real paragraphs, grounded in what the user actually said, not invented detail}
 
 ## The Solution
-{From Batch A Q2 + Batch B — what gets built and how it addresses the problem}
+{From questions 2 and 5-8 — what gets built and how it addresses the problem}
 
 ## The User
 {Who this is for, as specifically as the interview supports}
 
 ## What We Are Not Building
-{From Batch A Q4 — explicit scope boundaries}
+{From question 4 — explicit scope boundaries}
 
 ## Success Metric
 {Ask, if not already covered: what does "this is working" look like in one concrete, observable sentence?}
