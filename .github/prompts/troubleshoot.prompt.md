@@ -4,8 +4,8 @@ description: "Structured debugging workflow — Observe, Theorize, Act. Use when
 
 ## Config
 <!-- Fill in once when you set up this repo -->
-TEST_COMMAND: pytest tests/ -v
-SRC_ROOT: backend/
+TEST_COMMAND: {set by init-project — e.g. "pytest tests/ -v" or "npm test"}
+SRC_ROOT: {set by init-project — the main source folder}
 LOG_PATH: logs/
 
 ---

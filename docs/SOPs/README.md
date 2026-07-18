@@ -16,7 +16,7 @@ SOPs are written for execution, not reading. Each one should be specific enough 
 ## What does not belong here
 
 - One-off scripts (those go in scripts/)
-- Architecture decisions behind the procedures (those go in docs/ARDs/)
+- Architecture decisions behind the procedures (those go in docs/ADRs/)
 - High-level plans or roadmaps (those go in docs/plans/)
 
 ## Naming convention

@@ -109,7 +109,7 @@ Remove items when resolved and add a note to the relevant ADR or spec.
 ## Decision log
 
 <!--
-A running summary of key decisions. For full context see docs/ARDs/.
+A running summary of key decisions. For full context see docs/ADRs/.
 Format:
 ### ADR-NNN — Short title
 - One line summary of the decision

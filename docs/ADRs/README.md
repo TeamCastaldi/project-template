@@ -1,8 +1,8 @@
-# Architecture Decision Records (ARDs)
+# Architecture Decision Records (ADRs)
 
-This folder contains Architecture Decision Records for the project. Each ARD documents a significant technical or structural decision — what was decided, why, what was ruled out, and what the consequences are.
+This folder contains Architecture Decision Records for the project. Each ADR documents a significant technical or structural decision — what was decided, why, what was ruled out, and what the consequences are.
 
-ARDs are written when a decision is made and updated if circumstances change. They are not deleted — superseded decisions are marked as such and kept for historical context.
+ADRs are written when a decision is made and updated if circumstances change. They are not deleted — superseded decisions are marked as such and kept for historical context.
 
 ## What belongs here
 
@@ -19,7 +19,7 @@ ARDs are written when a decision is made and updated if circumstances change. Th
 
 ## Naming convention
 
-`ARD-NNN-short-description.md` — e.g. `ARD-001-database-choice.md`
+`ADR-NNN-short-description.md` — e.g. `ADR-001-database-choice.md`
 
 ## Status values
 
@@ -28,4 +28,4 @@ ARDs are written when a decision is made and updated if circumstances change. Th
 | Accepted | In effect, follow this decision |
 | Draft | Under discussion, not yet binding |
 | Deprecated | No longer relevant but kept for history |
-| Superseded | Replaced by a later ARD — link provided |
+| Superseded | Replaced by a later ADR — link provided |

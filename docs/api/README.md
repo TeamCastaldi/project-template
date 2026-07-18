@@ -2,7 +2,7 @@
 
 This folder contains hand-written API documentation, integration guides, and reference material for the project's APIs.
 
-FastAPI generates interactive OpenAPI docs automatically at `/docs` (Swagger) and `/redoc` when the server is running. What lives here is the documentation that the auto-generator cannot produce — context, intent, and integration guidance.
+Only relevant if this project exposes an API. Some frameworks (e.g. FastAPI) generate interactive OpenAPI docs automatically at runtime — if this project's does, note where here. Either way, what lives in this folder is the documentation an auto-generator can't produce: context, intent, and integration guidance.
 
 ## What belongs here
 
@@ -15,6 +15,6 @@ FastAPI generates interactive OpenAPI docs automatically at `/docs` (Swagger) an
 
 ## What does not belong here
 
-- Auto-generated OpenAPI specs (those are served live by FastAPI)
-- Architecture decisions about the API design (those go in docs/ARDs/)
+- Auto-generated OpenAPI/Swagger specs (those are served live by the framework, if it produces them)
+- Architecture decisions about the API design (those go in docs/ADRs/)
 - Deployment or infrastructure docs (those go in docs/SOPs/)
