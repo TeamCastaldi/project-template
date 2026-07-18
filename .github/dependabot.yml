@@ -11,6 +11,7 @@ updates:
       - "dependencies"
       - "github-actions"
 
-  # /init-project adds one block per stack it scaffolds (e.g. "pip" against
-  # /backend, "npm" against /frontend) — see
+  # The init-project.prompt.md workflow (.github/prompts/init-project.prompt.md)
+  # adds one block per stack it scaffolds (e.g. "pip" for a backend/ folder,
+  # "npm" for a frontend/ folder) — see
   # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file

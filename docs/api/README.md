@@ -2,7 +2,7 @@
 
 This folder contains hand-written API documentation, integration guides, and reference material for the project's APIs.
 
-Only relevant if this project exposes an API. Some frameworks (e.g. FastAPI) generate interactive OpenAPI docs automatically at runtime — if this project's does, note where here. Either way, what lives in this folder is the documentation an auto-generator can't produce: context, intent, and integration guidance.
+Only relevant if this project exposes an API. Some frameworks (e.g. FastAPI) generate interactive OpenAPI docs automatically at runtime — if this project's framework does, note the URL here (e.g. `/docs`). Either way, what lives in this folder is the documentation an auto-generator can't produce: context, intent, and integration guidance.
 
 ## What belongs here
 
