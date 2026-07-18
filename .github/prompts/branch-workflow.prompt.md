@@ -4,11 +4,11 @@ description: "Interactive menu for git branch-based development workflow with co
 
 ## Config
 <!-- Fill in once when you set up this repo -->
-TEST_COMMAND: pytest tests/ -v
-LINT_COMMAND: ruff check .
-SRC_ROOT: backend/
+TEST_COMMAND: {set by init-project — e.g. "pytest tests/ -v" or "npm test"}
+LINT_COMMAND: {set by init-project — e.g. "ruff check ." or "npm run lint"}
+SRC_ROOT: {set by init-project — the main source folder}
 DOCS_ROOT: docs/
-ADR_PATH: docs/ARDs/
+ADR_PATH: docs/ADRs/
 SNAPSHOT_PATH: docs/session-history/
 
 ---
@@ -67,7 +67,7 @@ STEPS:
 2. Implement core logic
 3. Add unit tests
 4. Add integration tests if needed
-5. Update relevant docs (spec, ARD if applicable)
+5. Update relevant docs (spec, ADR if applicable)
 6. Run: {TEST_COMMAND}
 7. Commit: feat: {description}
 

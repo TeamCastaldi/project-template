@@ -36,7 +36,7 @@ Conventional Commits format is **expected**, not optional.
 
 ### 3. Open a PR
 
-CI must pass (ruff + pytest). No other minimum bar — this is a solo-maintained template repo. Fill in the PR template.
+No CI gate on the template itself — it ships no app code, so there's nothing to lint or test at this level. No other minimum bar — this is a solo-maintained template repo. Fill in the PR template.
 
 ### 4. Merge
 
@@ -57,5 +57,4 @@ When you change the folder structure, add a prompt, or update a tooling default 
 
 ## What's out of scope
 
-- Application code (this is a template, not an app)
-- Stack changes without discussion (e.g. switching from FastAPI to Django)
+- Application code or a hardcoded stack (this is a stack-agnostic template — stack choice happens per-project via `init-project.prompt.md`, not in the template itself)

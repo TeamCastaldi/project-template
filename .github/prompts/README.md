@@ -8,6 +8,9 @@ Each prompt file has a `## Config` section at the top. Fill these in once when y
 
 ## Available Prompts
 
+### `init-project.prompt.md`
+Run once, right after cloning this template into a fresh repo. Runs a requirements-gathering interview, scaffolds only the folders the project actually needs, fills in `CLAUDE.md`, and writes `docs/foundation.md`.
+
 ### `session-start.prompt.md`
 Initialize a coding session with full context sync. Run this at the start of each session to ground the LLM in git history, project standards, and the last session snapshot.
 

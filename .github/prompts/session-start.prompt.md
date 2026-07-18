@@ -5,9 +5,9 @@ description: "Gated workflow to initialize a coding session by syncing with git 
 ## Config
 <!-- Fill in once when you set up this repo -->
 SNAPSHOT_PATH: docs/session-history/
-TEST_COMMAND: pytest tests/ -v
-LINT_COMMAND: ruff check .
-SRC_ROOT: backend/
+TEST_COMMAND: {set by init-project — e.g. "pytest tests/ -v" or "npm test"}
+LINT_COMMAND: {set by init-project — e.g. "ruff check ." or "npm run lint"}
+SRC_ROOT: {set by init-project — the main source folder}
 DOCS_ROOT: docs/
 
 ---

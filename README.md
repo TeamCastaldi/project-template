@@ -4,48 +4,37 @@
 
 ---
 
+## Getting started
+
+This is a stack-agnostic project template — it ships no app code, no framework choice, and no folder scaffolding. The first thing to do in a fresh repo cloned from this template is run the **init-project** prompt (`.github/prompts/init-project.prompt.md`):
+
+1. Open Copilot Chat (or Claude) in this repo
+2. Attach `.github/prompts/init-project.prompt.md` and follow its instructions
+3. Answer the requirements-gathering interview — project purpose, target user, stack, architecture, constraints
+4. Review and approve the scaffolding plan it proposes
+
+That run scaffolds the folders this project actually needs (e.g. `backend/`, `frontend/`, `db/`, or none of those, depending on the answers), writes a README into each, fills in `CLAUDE.md`, and writes `docs/foundation.md`. This README's own Stack, Quick Start, and Project Structure sections below get filled in as part of that.
+
+Once that's done, delete this "Getting started" section.
+
 ## Stack
 
-- **Backend**: Python / FastAPI
-- **Frontend**: React / Vite
-- **Database**: {e.g. PostgreSQL, MongoDB}
-- **Tests**: pytest
-- **Lint/Format**: ruff
+<!-- init-project fills this in -->
 
 ## Quick Start
 
-```bash
-# 1. Clone and enter the repo
-git clone {repo-url}
-cd {project-name}
-
-# 2. Copy environment template and fill in values
-cp .env.example .env
-
-# 3. Install backend dependencies
-pip install -r backend/requirements.txt
-
-# 4. Install frontend dependencies
-cd frontend && npm install
-
-# 5. Run backend
-uvicorn backend.main:app --reload
-
-# 6. Run frontend (separate terminal)
-cd frontend && npm run dev
-```
+<!-- init-project fills this in with the real setup steps for the chosen stack -->
 
 ## Project Structure
 
 ```
-backend/        FastAPI application
-frontend/       React + Vite application
-db/             Migrations, seeds, schema, init scripts
 docs/           All project documentation
 scripts/        Dev-time utilities (not shipped)
-tests/          pytest test suite
 ```
 
-For architecture decisions, see `docs/ARDs/`.
+init-project adds to this list as it scaffolds folders (`backend/`, `frontend/`, `db/`, `tests/`, or others, as needed).
+
+For architecture decisions, see `docs/ADRs/`.
 For technical specs, see `docs/specs/`.
 For SOPs and runbooks, see `docs/SOPs/`.
+For the founding brief, see `docs/foundation.md`.

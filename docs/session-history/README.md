@@ -13,7 +13,7 @@ A session snapshot written at the end of one session becomes the starting contex
 ## What does not belong here
 
 - Formal status reports for stakeholders (those go in docs/SOPs/ or are standalone docs)
-- Architecture decisions made during a session (those go in docs/ARDs/)
+- Architecture decisions made during a session (those go in docs/ADRs/)
 - Plans for future work (those go in docs/plans/)
 
 ## Naming convention

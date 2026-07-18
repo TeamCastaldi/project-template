@@ -15,7 +15,7 @@ Documents here are often exported conversations from planning sessions (Gemini, 
 ## What does not belong here
 
 - Finalized technical specifications (those go in docs/specs/)
-- Architecture decisions (those go in docs/ARDs/)
+- Architecture decisions (those go in docs/ADRs/)
 - Procedures and runbooks (those go in docs/SOPs/)
 
 ## Naming convention
