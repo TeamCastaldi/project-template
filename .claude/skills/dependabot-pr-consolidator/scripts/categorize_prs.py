@@ -23,15 +23,37 @@ Category rules:
                  bump on a stable release. Treat it the same way.
     Minor/Patch  A minor or patch bump on a stable (>=1.0) release, or a
                  patch-only bump within the same 0.x minor line
-                 (0.4.1 -> 0.4.3). This is the safe, stackable set.
+                 (0.4.1 -> 0.4.3). This is the safe, stackable set - see
+                 the caveat below.
     Grouped      One of Dependabot's own grouped-update PRs. It already
                  bundles several packages that were tested together;
                  pulling it apart to cherry-pick individual packages
                  risks breaking a combination its maintainers verified.
                  Left intact, not decomposed.
     Unknown      The PR title didn't match a recognized Dependabot
-                 pattern, or a version number couldn't be parsed. Never
-                 guess a risk level here - route it to manual review.
+                 pattern, a version number couldn't be parsed, or the
+                 title describes a requirement-range widening rather
+                 than a single version transition (e.g. "Update mcp
+                 requirement from <2,>=1.28.1 to >=1.28.1,<3" - there is
+                 no one old/new version to compare). Never guess a risk
+                 level here - route it to manual review.
+
+A repo that runs Dependabot alongside a Conventional-Commits release tool
+(release-please, semantic-release, etc.) often configures Dependabot's
+`commit-message.prefix` setting, so titles arrive as e.g.
+"chore(deps): Bump lodash from 4.17.20 to 4.17.21" instead of the plain
+"Bump ..." form. This script strips a leading `type(scope)!: ` prefix
+before matching, so that configuration doesn't need special-casing at
+run time.
+
+CAVEAT - this script only reads the PR title. "Minor/Patch" describes
+the *package's own* SemVer promise, not whether this specific repo can
+tolerate the change. A language runtime or Docker base image bump in
+particular can look like a safe minor bump in isolation while
+conflicting with a version pinned elsewhere in the repo (a linter's
+target-version setting, a `.tool-versions` file, project docs). See the
+skill's cross-reference check (Phase 3) for that risk - this script
+cannot see it from a title alone.
 
 This script only classifies. It does not touch git, GitHub, or any
 repository state.
@@ -51,6 +73,28 @@ SINGLE_RE = re.compile(
     r"^Bump (?P<package>\S+) from (?P<old>\S+) to (?P<new>\S+)",
     re.IGNORECASE,
 )
+
+# Some repos configure Dependabot's `commit-message.prefix` (often to satisfy
+# release-please or another Conventional-Commits-based release tool), so the
+# PR title itself arrives as e.g. "chore(deps): Bump lodash from ...". Strip
+# a leading `type(scope)!: ` or `type: ` before matching anything else -
+# titles without such a prefix are untouched, since the pattern requires a
+# literal colon immediately after the optional scope.
+CC_PREFIX_RE = re.compile(r"^\w+(?:\([\w./,\s-]+\))?!?:\s*")
+
+# Dependabot uses this phrasing for manifest requirement/range widenings
+# (e.g. "Update mcp requirement from <2,>=1.28.1 to >=1.28.1,<3"), which is
+# not a single version transition and should never be scored as though it
+# were one - there is no single "old" or "new" version to compare.
+UPDATE_REQUIREMENT_RE = re.compile(
+    r"^Update (?P<package>\S+) requirement from (?P<old>\S+) to (?P<new>\S+)",
+    re.IGNORECASE,
+)
+
+
+def _normalize_title(raw_title):
+    """Strip a leading Conventional Commit prefix, if present."""
+    return CC_PREFIX_RE.sub("", raw_title, count=1)
 
 
 def _core_version(raw):
@@ -78,7 +122,8 @@ def _core_version(raw):
 
 
 def categorize(pr):
-    title = pr.get("title", "")
+    raw_title = pr.get("title", "")
+    title = _normalize_title(raw_title)
 
     grouped = GROUPED_RE.match(title)
     if grouped:
@@ -93,6 +138,21 @@ def categorize(pr):
                 f"({grouped.group('count')} package(s)). Left intact "
                 "rather than split apart, since the group was tested "
                 "together."
+            ),
+        }
+
+    requirement = UPDATE_REQUIREMENT_RE.match(title)
+    if requirement:
+        return {
+            **pr,
+            "package": requirement.group("package"),
+            "old_version": requirement.group("old"),
+            "new_version": requirement.group("new"),
+            "category": "Unknown",
+            "reason": (
+                "Requirement-range widening, not a plain version bump - "
+                "there is no single resolved version to compare. Needs "
+                "manual review."
             ),
         }
 
