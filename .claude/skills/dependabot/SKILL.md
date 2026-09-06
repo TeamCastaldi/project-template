@@ -1,5 +1,5 @@
 ---
-name: dependabot-pr-consolidator
+name: dependabot
 description: Automate triage and safe consolidation of open Dependabot pull requests in a Git repository using the GitHub CLI (gh). Categorizes each open Dependabot PR by SemVer risk (Major, Minor/Patch, Grouped, or Unknown), cross-checks runtime/base-image bumps against versions pinned elsewhere in the repo, bundles the safe Minor/Patch bumps onto one consolidated branch and PR, and closes the superseded originals only once that PR is verified - while always leaving Major version bumps and Dependabot's own grouped updates open for manual review. Use this skill whenever the user mentions Dependabot PRs, dependency bumps, consolidating or batching dependency updates, cleaning up a repo's open PR queue, or asks to triage, merge, or close a pile of automated dependency pull requests - even if they don't say "Dependabot" by name.
 compatibility: Requires a local git checkout of the target repo, the GitHub CLI (gh) authenticated with repo write access, and Python 3 for the bundled categorization script. Designed for an agent runtime with bash tool access, such as Claude Code.
 ---

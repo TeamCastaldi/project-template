@@ -1,5 +1,5 @@
 ---
-name: dev-session-manager
+name: session-manager
 description: >
   Structured coding session lifecycle manager for Nathan Castaldi. Three slash-command modes:
   /session-start (resolves per-repo config, scans git history and CLAUDE.md, handles a dirty

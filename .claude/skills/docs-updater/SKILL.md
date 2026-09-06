@@ -1,5 +1,5 @@
 ---
-name: session-docs-updater
+name: docs-updater
 description: >
   Updates a repo's living documentation (README.md files and CLAUDE.md) to reflect work
   completed in a coding session - new features, architectural decisions, changed
