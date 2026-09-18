@@ -6,14 +6,14 @@
 
 ## Getting started
 
-This is a stack-agnostic project template — it ships no app code, no framework choice, and no folder scaffolding. The first thing to do in a fresh repo cloned from this template is run the **init-project** prompt (`.github/prompts/init-project.prompt.md`):
+This is a stack-agnostic project template — it ships no app code, no framework choice, and no folder scaffolding. The first thing to do in a fresh repo cloned from this template is run the **init-project** skill (`.claude/skills/init-project/`):
 
-1. Open Copilot Chat (or Claude) in this repo
-2. Attach `.github/prompts/init-project.prompt.md` and follow its instructions
+1. Open Claude (or Copilot Chat) in this repo
+2. Ask it to set up the project — the skill loads on its own, or invoke it by name
 3. Answer the requirements-gathering interview — project purpose, target user, stack, architecture, constraints
 4. Review and approve the scaffolding plan it proposes
 
-That run scaffolds the folders this project actually needs (e.g. `backend/`, `frontend/`, `db/`, or none of those, depending on the answers), writes a README into each, fills in `CLAUDE.md`, and writes `docs/foundation.md`. This README's own Stack, Quick Start, and Project Structure sections below get filled in as part of that.
+That run scaffolds the folders this project actually needs (e.g. `backend/`, `frontend/`, `db/`, or none of those, depending on the answers), writes a README into each, fills in `CLAUDE.md`, and writes `docs/foundation.md`. It also re-points the docs this template ships — `CONTRIBUTING.md`, `SECURITY.md`, and the rest — so they describe your project rather than the template. This README's own Stack, Quick Start, and Project Structure sections below get filled in as part of that.
 
 Once that's done, delete this "Getting started" section.
 

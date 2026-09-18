@@ -20,6 +20,13 @@
 # log recording that the repo was scaffolded from a template — is a
 # legitimate reason to leave one in place. An unexplained hit is not.
 #
+# When such a mention is permanent, mark its line with `inherited-docs-ok` and
+# the checks skip it, so the sweep can stay a clean/dirty signal instead of
+# accumulating known-good noise. In markdown, write the marker as an HTML
+# comment:  <!-- inherited-docs-ok -->
+# Use it only for a mention that is correct as written, never to silence one
+# you have not looked at.
+#
 # Usage:
 #   check_inherited_docs.sh [repo_root]      # defaults to the current directory
 #
@@ -48,6 +55,13 @@ ROOT="$(cd "$ROOT" && pwd)"
 # Language that means "this repo is the template" rather than "this repo is a
 # project", plus placeholders the scaffolding phase should have filled in.
 TEMPLATE_RE='this template|the template itself|stack-agnostic|project template|from this template|init-project fills|\{PROJECT_NAME\}'
+
+# A line carrying this marker is skipped by all three checks. It is for a
+# mention that is deliberate and permanent — a migration table naming the
+# prompt files that became skills has to spell them out, and would otherwise
+# report as broken on every run forever. In markdown, write it as an HTML
+# comment so it does not render:  <!-- inherited-docs-ok -->
+SKIP_MARKER='inherited-docs-ok'
 
 # Collect the files worth sweeping: prose and the config files that reference
 # workflow paths. Read NUL-delimited so paths with spaces survive, via the
@@ -82,7 +96,7 @@ for f in "${FILES[@]}"; do
     text="${text#"${text%%[![:space:]]*}"}"
     printf 'TEMPLATE_LANGUAGE\t%s:%s\t%s\n' "$(rel "$f")" "$lineno" "${text:0:120}"
     n_lang=$((n_lang + 1))
-  done < <(grep -niE "$TEMPLATE_RE" "$f" || true)
+  done < <(grep -niE "$TEMPLATE_RE" "$f" | grep -vF "$SKIP_MARKER" || true)
 done
 
 # ---------------------------------------------------------------- check 2
@@ -112,7 +126,7 @@ for f in "${FILES[@]}"; do
         n_link=$((n_link + 1))
       fi
     done < <(printf '%s\n' "$text" | grep -oE '\]\([^)]+\)' | sed -E 's/^\]\(//; s/\)$//' || true)
-  done < <(grep -nE '\]\([^)]+\)' "$f" || true)
+  done < <(grep -nE '\]\([^)]+\)' "$f" | grep -vF "$SKIP_MARKER" || true)
 done
 
 # ---------------------------------------------------------------- check 3
@@ -127,7 +141,7 @@ for f in "${FILES[@]}"; do
         n_prompt=$((n_prompt + 1))
       fi
     done < <(printf '%s\n' "$text" | grep -oE '[A-Za-z0-9_-]+\.prompt\.md' | sort -u || true)
-  done < <(grep -nE '[A-Za-z0-9_-]+\.prompt\.md' "$f" || true)
+  done < <(grep -nE '[A-Za-z0-9_-]+\.prompt\.md' "$f" | grep -vF "$SKIP_MARKER" || true)
 done
 
 echo '---'

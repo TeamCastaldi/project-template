@@ -121,7 +121,7 @@ Do not freshen a timeless guide just because it looks untouched. An unmodified f
 | `SECURITY.md` | "a project template, not a deployed application"; names a `requirements.txt` the project may not have; claims Dependabot watches pip, npm, and Actions | What this project actually is and whether it is deployed; its real manifest file; the exact ecosystems now in `.github/dependabot.yml` |
 | `scripts/README.md` | Sends application code to `backend/` | The real source root chosen in Phase 2 — `src/`, `app/`, or whatever it is. `backend/` was a guess the template had no way to make |
 | `docs/api/README.md` | Instructs the reader to note the generated-docs URL, then never does | The real URL if the framework serves one — check it rather than assuming, since `/docs` and `/redoc` are FastAPI's, not everyone's. If this project exposes no API, delete the folder |
-| `.github/prompts/README.md` | Indexes a prompt library | Only the prompts that exist in this repo. Delete entries for prompts that became skills |
+| `.github/prompts/README.md` | Indexes a prompt library, plus a table of which prompts became skills | Only the prompts that exist in this repo. Keep the migration table — it is how someone finds a workflow that moved — and extend it if this project moves more |
 | `.github/PULL_REQUEST_TEMPLATE.md` | Checklist defers to a `TEST_COMMAND` defined in a prompt file | The real commands, written out |
 | `.github/dependabot.yml` | Comment describes a workflow file that scaffolds ecosystem blocks | Nothing, once Phase 3 has added the real blocks — delete the stale comment |
 | `.github/prompts/sync-template.prompt.md` | Audits "the template's structure"; its Config block and its "run this after init" note both name files that are not here | An audit of *this project's* structure, with a real Config block and references that resolve. It is the workflow that catches drift from here on, so it is worth getting right rather than leaving half-pointed |
@@ -130,7 +130,9 @@ Leave `CODE_OF_CONDUCT.md` and the folder READMEs under `docs/` — `ADRs/`, `SO
 
 ### Two pointers that ship broken
 
-**References to files that no longer exist.** Several template docs point at `.prompt.md` files that have since become skills. As shipped, the root `README.md`, `CONTRIBUTING.md`, `.github/prompts/README.md`, `.github/dependabot.yml`, and `.github/PULL_REQUEST_TEMPLATE.md` all name prompt files that are not in the repo. Treat that list as a starting point rather than the current truth — the verification sweep below is what tells you which are broken today. Repoint each to whatever replaced it, or cut the sentence.
+**References to files that no longer exist.** Workflows move — several of this template's were `.prompt.md` files before they became skills — and the docs naming them are updated late or not at all. The template's own copies were repaired once, so a fresh clone should be clean here, but a project that synced from an older template, or one whose own workflows have since moved, will not be. Do not assume either way: the sweep below is what tells you. Repoint each stale reference at whatever replaced it, or cut the sentence.
+
+Where a reference is *deliberately* historical — a migration table that has to name the old file to be useful — keep it and mark the line `inherited-docs-ok`, which the sweep skips. `.github/prompts/README.md` carries exactly such a table. Marking is for a mention you have read and judged correct, never a way to quiet one you have not looked at.
 
 **Pointers into empty folders.** The root README sends a reader to `docs/ADRs/` for architecture decisions, but this skill logs those in `CLAUDE.md`, so unless someone has since written one by hand the folder is empty and the pointer goes nowhere. Check, then pick one and do it: promote the most significant decision into a real `docs/ADRs/ADR-001-*.md` — the stack or architecture choice usually earns one — or change the pointer to say where the decisions actually live. A reader who follows a cross-reference into an empty directory learns nothing and stops trusting every other pointer in the repo.
 
@@ -144,7 +146,7 @@ bash .claude/skills/init-project/scripts/check_inherited_docs.sh
 
 It checks three things: language still describing this repo as a template, links resolving to paths that do not exist, and references to prompt files that are not in `.github/prompts/`.
 
-Every hit must be either fixed or, if it is a deliberate historical mention — a decision-log entry recording that the repo was scaffolded from a template is the usual one — something you can name out loud as such. Do not report this phase complete on an unexplained hit, and do not describe the sweep as clean while it still exits 1.
+Every hit must be either fixed or, if it is a deliberate historical mention — a decision-log entry recording that the repo was scaffolded from a template is the usual one — something you can name out loud as such. When the mention is permanent, mark its line `inherited-docs-ok` so the sweep stays a clean/dirty signal rather than a list of known-good noise that everyone learns to scroll past. Do not report this phase complete on an unexplained hit, and do not describe the sweep as clean while it still exits 1.
 
 The sweep is a backstop, not the standard. It reads text; it cannot tell you that `CONTRIBUTING.md` documents a test command that does not exist, or that `SECURITY.md` lists ecosystems Dependabot is not actually watching. Confirm those against the files Phase 3 wrote.
 

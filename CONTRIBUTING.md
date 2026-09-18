@@ -23,7 +23,7 @@ Branch names are snake_case. Keep them short and descriptive.
 
 ### 2. Make your changes
 
-Work atomically — one logical change per commit. Use the create-commit prompt (`.github/prompts/create-commit.prompt.md`) or follow Conventional Commits format directly:
+Work atomically — one logical change per commit. Use the `session-manager` skill's `/commit-msg` mode (`.claude/skills/session-manager/`) or follow Conventional Commits format directly:
 
 ```
 feat(scope): add sync-template prompt
@@ -57,4 +57,4 @@ When you change the folder structure, add a prompt, or update a tooling default 
 
 ## What's out of scope
 
-- Application code or a hardcoded stack (this is a stack-agnostic template — stack choice happens per-project via `init-project.prompt.md`, not in the template itself)
+- Application code or a hardcoded stack (this is a stack-agnostic template — stack choice happens per-project via the `init-project` skill, not in the template itself)
