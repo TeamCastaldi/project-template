@@ -42,6 +42,8 @@ The slash commands keep the names they already had, so nothing you type changes:
 - `.claude/hooks/session-start-hook.sh` and a `settings.json` wiring it to `SessionStart`. It answers one question as a session opens — can this session run the tests? — by reading `TEST_COMMAND` from `## Session Config` rather than guessing the stack. It never installs, never fails a session, and says nothing when all is well, because a hook cannot be declined and one that cries wolf is one nobody reads.
 - A naming convention for hooks, `hooks/<event>-hook.sh`, plus five standing rules every hook follows. The suffix disambiguates the `/session-start` command from the `SessionStart` hook, which do unrelated jobs.
 - `.claude/settings.local.json` is now gitignored. It was not, so a personal permission grant would have been committed into the shared repo.
+- A `permissions` block in `settings.json`: `deny` on reads of secret-bearing files, `ask` on destructive git operations, and an `allow` list covering only the read-only checks this repo ships. The three lists are not symmetric — deny only removes capability, while allow is a grant made on behalf of every downstream clone — so deny is generous and allow is narrow. `.env.example` is deliberately readable, and `simulate_init.sh` is deliberately not allowlisted since it writes a caller-named tree.
+- `check_doc_claims.sh` now also verifies every `Bash(bash …)` allow rule names a script that exists. A rule pointing at a renamed file grants nothing while still reading like a grant. Matcher *behavior* remains unverifiable from a script, which is why the permissions are documented as a seatbelt rather than a vault.
 
 ### Fixed
 

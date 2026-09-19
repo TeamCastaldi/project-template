@@ -84,6 +84,30 @@ The suffix is redundant with the folder, and deliberate anyway. This repo ships 
 
 The bar for the shared file is high for the same reason hooks are: nobody approves it per run.
 
+### Permissions
+
+The three lists are not symmetric, and that asymmetry decides what belongs in a shared file.
+
+- **`deny` is cheap to be wrong about.** It only removes capability, so an over-broad rule costs annoyance. Ship it generously.
+- **`allow` is a grant made on behalf of repos nobody here has seen.** Ship it stingily, and only for things this repo itself provides.
+- **`ask` forces a prompt** without forbidding the action, which is the right shape for something occasionally necessary and never routine.
+
+What is configured here:
+
+**Deny** — reads of secret-bearing files: `.env` and its real-secret variants, `*.pem`, `*.p12`, SSH private keys, `credentials.json`, `.aws/credentials`, `.npmrc`, `.pypirc`. `.gitignore` stops these being *committed*; it does nothing to stop their contents entering a conversation. Note `.env.example` is deliberately **not** denied — it carries no secrets and is often the fastest way to understand a project's configuration.
+
+**Allow** — only the read-only checks this repo ships, by exact script path. Nothing stack-specific: the template cannot know whether a project's tests are `pytest` or `vitest`, so allowlisting either would be a guess applied to every clone. `simulate_init.sh` is deliberately excluded — it writes a directory tree the caller names, which is not read-only.
+
+**Ask** — force-push, hard reset, branch delete, `git clean -f`. These already prompt under the default permission mode; the rules are a backstop for a project that later loosens `defaultMode`, and they keep the operation *possible*, which a flat deny would not. A deny here sends someone editing settings mid-incident.
+
+### What is and is not verified
+
+`scripts/check_doc_claims.sh` checks that every `Bash(bash …)` allow rule names a script that still exists — an allow rule pointing at a renamed file grants nothing while still reading like a grant.
+
+It cannot check that a matcher *matches*. A deny rule whose pattern is subtly wrong protects nothing while looking like protection, which is worse than no rule at all because it manufactures confidence. Treat these as a seatbelt, not a vault, and keep anything genuinely sensitive out of the repo rather than trusting a pattern to hide it.
+
+Prefix matching is also order-sensitive: `Bash(git push --force *)` catches `git push --force origin main` but not `git push origin main --force`. The rules catch the conventional spelling, not every permutation.
+
 ## Workflows that moved
 
 Kept so anyone following an old reference can find where it went. These name files that no longer exist, deliberately.
