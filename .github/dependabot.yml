@@ -1,7 +1,9 @@
 version: 2
 
 updates:
-  # GitHub Actions
+  # GitHub Actions — keeps the actions pinned in .github/workflows/ current.
+  # skills-ci.yml is the template's own workflow; init-project adds the
+  # scaffolded project's ci.yml alongside it.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

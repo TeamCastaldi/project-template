@@ -36,7 +36,16 @@ Conventional Commits format is **expected**, not optional.
 
 ### 3. Open a PR
 
-No CI gate on the template itself — it ships no app code, so there's nothing to lint or test at this level. No other minimum bar — this is a solo-maintained template repo. Fill in the PR template.
+CI must be green. The template ships no app code, but it does ship the scripts its skills depend on, and [`.github/workflows/skills-ci.yml`](.github/workflows/skills-ci.yml) lints and tests them. Run the same checks locally before pushing:
+
+```bash
+bash scripts/validate_skills.sh                                   # skill layout and frontmatter
+bash .claude/skills/init-project/scripts/test_check_inherited_docs.sh
+bash .claude/skills/sync-from-template/scripts/test_compare_template.sh
+python3 -m pytest .claude/skills/dependabot/scripts/test_categorize_prs.py -q
+```
+
+No other minimum bar — this is a solo-maintained template repo. Fill in the PR template.
 
 ### 4. Merge
 
@@ -52,9 +61,11 @@ When you change the folder structure, add a prompt, or update a tooling default 
 
 - Improvements to the folder structure or READMEs
 - New or improved prompts in `.github/prompts/`
+- New or improved skills in `.claude/skills/` — see [`.claude/skills/README.md`](.claude/skills/README.md) for what earns a slot there
 - CI, dependabot, or tooling updates
 - Bug fixes in any template file
 
 ## What's out of scope
 
 - Application code or a hardcoded stack (this is a stack-agnostic template — stack choice happens per-project via the `init-project` skill, not in the template itself)
+- Skills tied to one person's infrastructure or non-engineering workflows — every cloned project inherits `.claude/skills/`, so a homelab or personal skill becomes dead weight in repos that have nothing to do with it

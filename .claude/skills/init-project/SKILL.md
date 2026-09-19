@@ -81,6 +81,7 @@ Work out, from the answers:
 - Which top-level folders this project actually needs. Do not scaffold `frontend/` for a CLI. Do not scaffold `db/` for a project with no persistence layer. Common candidates: `backend/` (or `src/`), `frontend/`, `db/`, `tests/`. Add others the stack calls for — a plugin's `server/` plus build pipeline, or an MCP server's tool-module layout.
 - For each folder: a short structure sketch and what its README should say, written for the actual chosen stack, not generic boilerplate. Model the tone and depth on the existing `docs/*/README.md` files already in this repo — What belongs here, What doesn't, conventions — but for code folders instead of docs folders.
 - Root-level tooling to add: a manifest file appropriate to the language (`pyproject.toml`, `package.json`, `go.mod`, and so on), a CI workflow (`.github/workflows/ci.yml`) that runs the chosen lint and test commands, a `.env.example` if the stack has configurable env vars, and a `dependabot.yml` block per package ecosystem introduced. Append to the existing GitHub Actions block — do not replace it.
+- `.github/workflows/skills-ci.yml` already exists and is not the project's CI. It tests the scripts under `.claude/skills/`, which this project keeps, so it stays valid here and should be left alone — write the project's own checks as a separate `ci.yml`. Only if the project strips `.claude/skills/` entirely does `skills-ci.yml` go with it.
 - Which of the existing `.github/prompts/*.prompt.md` Config blocks need real values now — `TEST_COMMAND`, `LINT_COMMAND`, `SRC_ROOT`, `ADR_PATH`, and so on. Some, like `DOCS_ROOT`, are already correct as shipped.
 - Which inherited docs Phase 4 will rewrite, as a plain file list. Read that phase now so the plan you present covers them — the user should approve the docs pass, not discover it. One of those calls needs an answer now: whether this project exposes an API (decides whether `docs/api/` is filled in or deleted).
 - Which stack or architecture decisions from this interview become ADR files. Every one does — list their working titles now, so the user sees the `docs/ADRs/*.md` files by name before Phase 4 writes them, rather than discovering the folder filled in afterward.
@@ -98,6 +99,8 @@ Once the user approves the plan:
 1. Write the root tooling files from Phase 2.
 1. Update the `Config` block in each `.github/prompts/*.prompt.md` file that had a placeholder, with the real values now known.
 1. Update the root `README.md`: fill in `## Stack`, `## Quick Start`, and `## Project Structure` with the real content. Delete the `## Getting started` section — its job, pointing here, is done.
+1. Leave `.template-version` in place, unedited. It records which version of the template this project was scaffolded from, and the `sync-from-template` workflow reads it later to report how far behind the project has fallen and which changelog entries it missed. Deleting it as template residue costs that project its only provenance marker; it is the one inherited file that is *about* the relationship to the template and is meant to stay.
+1. Delete the template's own `CHANGELOG.md` — it is a log of template releases, not of this project. If the project wants a changelog, it starts empty at its own 0.1.0.
 1. Work out and present the cloud environment recommendation below, using the install and test commands just written into the manifest and CI workflow.
 
 ### Recommend the cloud environment settings
@@ -151,7 +154,7 @@ Do not freshen a timeless guide just because it looks untouched. An unmodified f
 | `.github/dependabot.yml` | Comment describes a workflow file that scaffolds ecosystem blocks | Nothing, once Phase 3 has added the real blocks — delete the stale comment |
 | `.github/prompts/sync-template.prompt.md` | Audits "the template's structure"; its Config block and its "run this after init" note both name files that are not here | An audit of *this project's* structure, with a real Config block and references that resolve. It is the workflow that catches drift from here on, so it is worth getting right rather than leaving half-pointed |
 
-Leave `CODE_OF_CONDUCT.md` and the folder READMEs under `docs/` — `SOPs/`, `plans/`, `specs/`, `session-history/` — untouched. They are timeless guides. `docs/ADRs/README.md` is the one exception: its guide text (what belongs here, naming convention, status values) is timeless too, but its `## Index` table is not — see "Pointers into empty folders" below.
+Leave `CODE_OF_CONDUCT.md`, `.claude/skills/README.md`, and the folder READMEs under `docs/` — `SOPs/`, `plans/`, `specs/`, `session-history/` — untouched. They are timeless guides. (The sweep never reports on `.claude/skills/` at all, so that README's mentions of the template will not surface as hits — leave it anyway: it describes what belongs in a skills folder and how a skill must be laid out to load, which stays true here.) `docs/ADRs/README.md` is the one exception: its guide text (what belongs here, naming convention, status values) is timeless too, but its `## Index` table is not — see "Pointers into empty folders" below.
 
 ### Two pointers that ship broken
 

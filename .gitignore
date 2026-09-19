@@ -21,7 +21,18 @@ desktop.ini
 *.swo
 
 # -------------------------------------------------------
-# Stack-specific ignores (Python __pycache__/.venv, node_modules/dist,
-# *.db, etc.) — /init-project appends the right block(s) once the stack
-# is chosen. Project-specific entries go below that.
+# The template's own test tooling — not a stack choice. The scripts under
+# .claude/skills/ ship with Python and bash tests that CI runs, and those
+# leave artifacts behind wherever they run, including in a project that
+# never picks Python as its stack.
+# -------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# -------------------------------------------------------
+# Stack-specific ignores (Python .venv, node_modules/dist, *.db, etc.)
+# — /init-project appends the right block(s) once the stack is chosen.
+# Project-specific entries go below that.
 # -------------------------------------------------------
