@@ -39,11 +39,15 @@ Conventional Commits format is **expected**, not optional.
 CI must be green. The template ships no app code, but it does ship the scripts its skills depend on, and [`.github/workflows/skills-ci.yml`](.github/workflows/skills-ci.yml) lints and tests them. Run the same checks locally before pushing:
 
 ```bash
-bash scripts/validate_skills.sh                                   # skill layout and frontmatter
+python3 -m pip install -r requirements-dev.txt   # pinned — same versions CI uses
+bash scripts/validate_skills.sh                  # skill layout and frontmatter
 bash .claude/skills/init-project/scripts/test_check_inherited_docs.sh
 bash .claude/skills/sync-from-template/scripts/test_compare_template.sh
-python3 -m pytest .claude/skills/dependabot/scripts/test_categorize_prs.py -q
+ruff check .claude/skills
+python3 -m pytest .claude/skills/dependabot/scripts -q
 ```
+
+Install from `requirements-dev.txt` rather than a bare `pip install ruff`. The pins there are what CI enforces, and a newer ruff enables rules CI does not — that difference is a green local run and a red PR.
 
 No other minimum bar — this is a solo-maintained template repo. Fill in the PR template.
 

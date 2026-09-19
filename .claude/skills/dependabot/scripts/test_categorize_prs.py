@@ -173,11 +173,14 @@ def test_original_fields_are_preserved():
 
 
 def run_script(stdin_text):
+    # check=False: several cases below assert on a non-zero exit code, so a
+    # failed run is an expected outcome rather than an error to raise on.
     return subprocess.run(
         [sys.executable, str(SCRIPT)],
         input=stdin_text,
         capture_output=True,
         text=True,
+        check=False,
     )
 
 

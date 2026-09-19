@@ -13,6 +13,18 @@ updates:
       - "dependencies"
       - "github-actions"
 
+  # The template's own lint/test tooling, pinned in requirements-dev.txt. This
+  # is not the scaffolded project's stack — it exists so a ruff or pytest bump
+  # arrives as a reviewable PR rather than silently changing what CI enforces.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "tooling"
+
   # The init-project skill (.claude/skills/init-project/) adds one block per
   # stack it scaffolds (e.g. "pip" for a backend/ folder, "npm" for a frontend/
   # folder) — see
