@@ -82,7 +82,8 @@ Work out, from the answers:
 - For each folder: a short structure sketch and what its README should say, written for the actual chosen stack, not generic boilerplate. Model the tone and depth on the existing `docs/*/README.md` files already in this repo — What belongs here, What doesn't, conventions — but for code folders instead of docs folders.
 - Root-level tooling to add: a manifest file appropriate to the language (`pyproject.toml`, `package.json`, `go.mod`, and so on), a CI workflow (`.github/workflows/ci.yml`) that runs the chosen lint and test commands, a `.env.example` if the stack has configurable env vars, and a `dependabot.yml` block per package ecosystem introduced. Append to the existing GitHub Actions block — do not replace it.
 - Which of the existing `.github/prompts/*.prompt.md` Config blocks need real values now — `TEST_COMMAND`, `LINT_COMMAND`, `SRC_ROOT`, `ADR_PATH`, and so on. Some, like `DOCS_ROOT`, are already correct as shipped.
-- Which inherited docs Phase 4 will rewrite, as a plain file list. Read that phase now so the plan you present covers them — the user should approve the docs pass, not discover it. Two of those calls need their answers: whether this project exposes an API (decides whether `docs/api/` is filled in or deleted) and whether the first architecture decision becomes a real ADR file.
+- Which inherited docs Phase 4 will rewrite, as a plain file list. Read that phase now so the plan you present covers them — the user should approve the docs pass, not discover it. One of those calls needs an answer now: whether this project exposes an API (decides whether `docs/api/` is filled in or deleted).
+- Which stack or architecture decisions from this interview become ADR files. Every one does — list their working titles now, so the user sees the `docs/ADRs/*.md` files by name before Phase 4 writes them, rather than discovering the folder filled in afterward.
 
 Present this as a plan: folder list, one line per file to be created or modified, README contents summarized rather than pasted in full. Ask for approval.
 
@@ -150,7 +151,7 @@ Do not freshen a timeless guide just because it looks untouched. An unmodified f
 | `.github/dependabot.yml` | Comment describes a workflow file that scaffolds ecosystem blocks | Nothing, once Phase 3 has added the real blocks — delete the stale comment |
 | `.github/prompts/sync-template.prompt.md` | Audits "the template's structure"; its Config block and its "run this after init" note both name files that are not here | An audit of *this project's* structure, with a real Config block and references that resolve. It is the workflow that catches drift from here on, so it is worth getting right rather than leaving half-pointed |
 
-Leave `CODE_OF_CONDUCT.md` and the folder READMEs under `docs/` — `ADRs/`, `SOPs/`, `plans/`, `specs/`, `session-history/` — untouched. They are timeless guides.
+Leave `CODE_OF_CONDUCT.md` and the folder READMEs under `docs/` — `SOPs/`, `plans/`, `specs/`, `session-history/` — untouched. They are timeless guides. `docs/ADRs/README.md` is the one exception: its guide text (what belongs here, naming convention, status values) is timeless too, but its `## Index` table is not — see "Pointers into empty folders" below.
 
 ### Two pointers that ship broken
 
@@ -158,7 +159,7 @@ Leave `CODE_OF_CONDUCT.md` and the folder READMEs under `docs/` — `ADRs/`, `SO
 
 Where a reference is *deliberately* historical — a migration table that has to name the old file to be useful — keep it and mark the line `inherited-docs-ok`, which the sweep skips. `.github/prompts/README.md` carries exactly such a table. Marking is for a mention you have read and judged correct, never a way to quiet one you have not looked at.
 
-**Pointers into empty folders.** The root README sends a reader to `docs/ADRs/` for architecture decisions, but this skill logs those in `CLAUDE.md`, so unless someone has since written one by hand the folder is empty and the pointer goes nowhere. Check, then pick one and do it: promote the most significant decision into a real `docs/ADRs/ADR-001-*.md` — the stack or architecture choice usually earns one — or change the pointer to say where the decisions actually live. A reader who follows a cross-reference into an empty directory learns nothing and stops trusting every other pointer in the repo.
+**Pointers into empty folders.** The root README sends a reader to `docs/ADRs/` for architecture decisions. Make sure that pointer resolves: write one real, unique file there — `docs/ADRs/ADR-NNN-short-description.md`, per the naming convention and status values in `docs/ADRs/README.md` — for every stack or architecture decision this session made, not just the single most significant one. Add a row to that README's `## Index` table for each file as you write it. `CLAUDE.md`'s own `## Decision log` (Phase 5) never hosts a decision's content itself; it only links to the files written here, so there is exactly one place the actual reasoning lives. A reader who follows a cross-reference into an empty directory learns nothing and stops trusting every other pointer in the repo — and a decision log split across two competing homes teaches the same distrust.
 
 ### Verify before moving on
 
@@ -186,7 +187,7 @@ Fill in every section of `CLAUDE.md` from the interview. Remove the HTML-comment
 - **Scoring/ranking logic** — from question 16, or delete this section if it does not apply.
 - **Current state** — `### Done`: "Repo scaffolded from template, foundation.md and CLAUDE.md written." `### In progress`: empty. `### Not started`: the obvious next build steps the interview implies, for example "first data model" or "first endpoint."
 - **Open questions** — anything the user answered "not sure" or "you decide" during the interview.
-- **Decision log** — one entry per stack or architecture choice made this session, in the file's existing `### ADR-NNN — Short title` format. These are lightweight log entries; most do not need a matching file in `docs/ADRs/`. The one exception is whichever decision Phase 4 promoted to a real ADR to resolve the empty-folder pointer — keep its number and title identical in both places, so the log entry and the file are visibly the same decision rather than two competing records of it.
+- **Decision log** — this section only ever links out: one line per ADR file Phase 4 wrote, `- [ADR-NNN: Short title](docs/ADRs/ADR-NNN-short-title.md) — one-line summary`. Never restate a decision's reasoning here — that content lives once, in the ADR file — and make sure this list and the ADRs README's `## Index` table name the exact same set of files.
 - Footer timestamp and session description.
 
 ## Phase 6: write docs/foundation.md
@@ -221,10 +222,10 @@ Use this structure:
 {Anything deferred during the interview}
 
 ---
-*This document is the source of truth for product intent. Architecture and technology decisions live in {wherever Phase 4 established they live}; this file is about why, not how.*
+*This document is the source of truth for product intent. Architecture and technology decisions live in docs/ADRs/; this file is about why, not how.*
 ```
 
-Fill that last pointer in with the answer Phase 4 settled on — `docs/ADRs/` if you seeded a real ADR there, the `## Decision log` in `CLAUDE.md` if you did not. Do not ship it pointing at an empty folder; this file is the first one a new session reads, so a dead cross-reference here is the most expensive one in the repo.
+That pointer is never dead by the time this file is written — Phase 4 always seeds `docs/ADRs/` with a real file per decision made this session. This file is the first one a new session reads, so a dead cross-reference here would be the most expensive one in the repo.
 
 Keep it honest and specific to what the user actually said. Do not pad it with invented market research or generic startup language. If the interview did not produce enough for a section, say so explicitly — for example, "Success metric: not yet defined — revisit before first release" — rather than inventing content.
 
@@ -233,6 +234,7 @@ This document is a founding brief, and later sessions should treat it as one: a 
 ## Phase 7: wrap-up
 
 1. Summarize what you created: folder list, files written, and confirmation that `CLAUDE.md` and `foundation.md` are updated.
+1. List the ADR files this session wrote in `docs/ADRs/`, and confirm that README's `## Index` table and CLAUDE.md's `## Decision log` both name the exact same set of files.
 1. Restate the Phase 3 cloud environment recommendation (Network access, Environment variables, Setup script) as the three ready-to-paste blocks, so it's not left buried mid-transcript — this is the thing the user is most likely to need again the moment they open the "Add cloud environment" dialog.
 1. List the inherited docs Phase 4 rewrote, separately from the files you created. These are the ones the user is least likely to re-read on their own, so they are the ones worth naming — and if you deleted anything, `docs/api/` most likely, say so plainly rather than leaving them to notice.
 1. Report the final state of the verification sweep, including any hit you deliberately left and why.

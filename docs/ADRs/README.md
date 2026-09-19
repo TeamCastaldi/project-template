@@ -29,3 +29,11 @@ ADRs are written when a decision is made and updated if circumstances change. Th
 | Draft | Under discussion, not yet binding |
 | Deprecated | No longer relevant but kept for history |
 | Superseded | Replaced by a later ADR — link provided |
+
+## Index
+
+Every ADR file in this folder gets a row here — this table, plus `CLAUDE.md`'s `## Decision log`, is how a reader finds the right file without opening each one. Keep it in sync: add a row the moment a new ADR is written, and update the Status column the moment one changes. `CLAUDE.md` should never host a decision's actual content — only a link into this table.
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| _none yet_ | — | — |

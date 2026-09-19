@@ -47,6 +47,12 @@ exact wording in Edge cases below instead of inventing plausible-sounding update
 3. Read each target file's current content in full before proposing an edit to it.
 4. Identify which sections need updating - new features, changed setup steps, new
    dependencies, revised architecture notes - and draft the replacement content.
+5. If a change reflects a new or reversed architecture/stack decision, do not write it into
+   CLAUDE.md's `## Decision log` directly - that section is a pointer, not a log. Write a new
+   file in `docs/ADRs/` (naming convention and status values in `docs/ADRs/README.md`), add a
+   row to that README's `## Index` table, and only then add the one-line link in CLAUDE.md's
+   `## Decision log`. A superseded decision gets a new ADR whose Status marks the old one
+   Superseded, not an edit that erases the old file's content.
 
 ## Format
 
