@@ -70,12 +70,20 @@ if [[ -e "$DEST" ]]; then
   exit 2
 fi
 
-# Copy tracked files only, so local caches and build artifacts stay out. Reads
-# working-tree content rather than `git archive HEAD`, so an uncommitted fix is
-# testable locally; in CI the two are identical, since the runner checks out the
+# Copy everything git would commit — tracked files plus untracked ones that are
+# not ignored — so local caches and build artifacts stay out.
+#
+# --others --exclude-standard is load-bearing, not thoroughness. Listing only
+# tracked files silently omits a file that has been written but not yet added,
+# which is precisely the file most likely to be wrong. That produced a green run
+# locally and a red one in CI, where the same file was committed and therefore
+# visible. Reading the working tree rather than `git archive HEAD` keeps an
+# uncommitted fix testable; in CI the two agree, since the runner checks out the
 # commit under test.
 mkdir -p "$DEST"
-git -C "$SRC" ls-files -z | tar -C "$SRC" --null -T - -cf - | tar -x -C "$DEST"
+git -C "$SRC" ls-files -z --cached --others --exclude-standard \
+  | tar -C "$SRC" --null -T - -cf - \
+  | tar -x -C "$DEST"
 
 cd "$DEST"
 

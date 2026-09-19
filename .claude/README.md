@@ -1,6 +1,6 @@
 # .claude
 
-Claude Code configuration that travels with the repo. Every project cloned from this template inherits this folder, so anything added here is a standing cost on projects that may have nothing to do with it.
+Claude Code configuration that travels with the repo. Any repo scaffolded from this one inherits the whole folder, so anything added here is a standing cost on projects that may have nothing to do with it.
 
 ```
 .claude/

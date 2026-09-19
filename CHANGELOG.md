@@ -40,6 +40,10 @@ The slash commands keep the names they already had, so nothing you type changes:
 
 - `.claude/README.md` — the rule deciding skill versus command, the signs you chose wrong, and a "Workflows that moved" table so an old reference still leads somewhere.
 
+### Fixed
+
+- `simulate_init.sh` listed only tracked files, so a file written but not yet `git add`ed was silently absent from every simulation — precisely the file most likely to be wrong. It produced a green local run and a red CI one for the same commit. Now lists what git would commit (`--cached --others --exclude-standard`).
+
 ## [1.1.0] - 2026-09-19
 
 Scaffolding is now verified end to end, and documentation claims are checked against the repo rather than trusted.
