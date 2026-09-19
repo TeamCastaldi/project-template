@@ -10,8 +10,9 @@
 #   BROKEN_LINK        a relative markdown link resolving to a path that does
 #                      not exist
 #   MISSING_PROMPT     a reference to a .prompt.md file that is not in
-#                      .github/prompts/ (these became skills; the docs that
-#                      named them were never updated)
+#                      .github/prompts/ (that folder is gone — its workflows
+#                      became commands and skills — so any such reference is
+#                      stale unless deliberately historical)
 #
 # Files under .claude/skills/ are skipped: a skill that explains the template
 # is supposed to mention it.
@@ -130,7 +131,9 @@ for f in "${FILES[@]}"; do
 done
 
 # ---------------------------------------------------------------- check 3
-# References to prompt files that are not in .github/prompts/.
+# References to prompt files that are not in .github/prompts/. Nothing in the
+# current layout creates that folder, so this resolves to "any .prompt.md
+# mention that has not been marked as deliberate history".
 for f in "${FILES[@]}"; do
   while IFS=: read -r lineno text; do
     [[ -z "${lineno:-}" ]] && continue

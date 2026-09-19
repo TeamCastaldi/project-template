@@ -32,6 +32,7 @@ Once that's done, delete this "Getting started" section.
 ## Project Structure
 
 ```
+.claude/        Claude Code commands and skills
 docs/           All project documentation
 scripts/        Dev-time utilities (not shipped)
 ```

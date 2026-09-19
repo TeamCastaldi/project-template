@@ -3,7 +3,7 @@ name: docs-updater
 description: >
   Updates a repo's living documentation (README.md files and CLAUDE.md) to reflect work
   completed in a coding session - new features, architectural decisions, changed
-  dependencies, revised setup steps. Distinct from dev-session-manager's
+  dependencies, revised setup steps. Distinct from /session-end's
   SESSION_SNAPSHOT files, which are a dated log; this skill edits the docs a new
   contributor would actually read today. Use whenever Nathan says things like "update the
   docs", "update the README", "sync CLAUDE.md", "the docs are stale", "make sure the

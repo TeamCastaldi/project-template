@@ -70,24 +70,31 @@ if [[ -e "$DEST" ]]; then
   exit 2
 fi
 
-# Copy tracked files only, so local caches and build artifacts stay out. Reads
-# working-tree content rather than `git archive HEAD`, so an uncommitted fix is
-# testable locally; in CI the two are identical, since the runner checks out the
+# Copy everything git would commit — tracked files plus untracked ones that are
+# not ignored — so local caches and build artifacts stay out.
+#
+# --others --exclude-standard is load-bearing, not thoroughness. Listing only
+# tracked files silently omits a file that has been written but not yet added,
+# which is precisely the file most likely to be wrong. That produced a green run
+# locally and a red one in CI, where the same file was committed and therefore
+# visible. Reading the working tree rather than `git archive HEAD` keeps an
+# uncommitted fix testable; in CI the two agree, since the runner checks out the
 # commit under test.
 mkdir -p "$DEST"
-git -C "$SRC" ls-files -z | tar -C "$SRC" --null -T - -cf - | tar -x -C "$DEST"
+git -C "$SRC" ls-files -z --cached --others --exclude-standard \
+  | tar -C "$SRC" --null -T - -cf - \
+  | tar -x -C "$DEST"
 
 cd "$DEST"
 
-# --- Phase 3: fill the prompt Config blocks -------------------------------
-for prompt in .github/prompts/*.prompt.md; do
-  [[ -f "$prompt" ]] || continue
-  sed -i \
-    -e "s|{set by init-project — e.g. \"pytest tests/ -v\" or \"npm test\"}|$TEST_COMMAND|" \
-    -e "s|{set by init-project — e.g. \"ruff check .\" or \"npm run lint\"}|$LINT_COMMAND|" \
-    -e "s|{set by init-project — the main source folder}|$SRC_ROOT|" \
-    "$prompt"
-done
+# --- Phase 3: fill CLAUDE.md's Session Config -----------------------------
+# One table, read by every command in .claude/commands/. Filling it here is the
+# whole of what used to be a per-prompt-file Config block edit.
+sed -i \
+  -e "s|{set by init-project — e.g. \"pytest tests/ -v\" or \"npm test\"}|$TEST_COMMAND|" \
+  -e "s|{set by init-project — e.g. \"ruff check .\" or \"npm run lint\"}|$LINT_COMMAND|" \
+  -e "s|{set by init-project — the main source folder}|$SRC_ROOT|" \
+  CLAUDE.md
 
 # --- Phase 3: the root README --------------------------------------------
 # Drop the one-time Getting started section, fill name, stack and quick start.
@@ -213,17 +220,8 @@ Dependabot runs weekly against the ecosystems configured in
 `.github/dependabot.yml`. Application dependencies live in `{manifest}`.
 """)
 
-readme = pathlib.Path(".github/prompts/README.md")
-text = readme.read_text()
-text = text.replace(
-    "Most of this template's workflows are now **skills**",
-    "Most of these workflows are now **skills**",
-)
-readme.write_text(text)
-
-skills_readme = pathlib.Path(".claude/skills/README.md")
-if skills_readme.exists():
-    pass  # timeless guide; init-project leaves it alone
+# .claude/README.md and .claude/skills/README.md are timeless guides that
+# init-project leaves alone, so there is nothing to re-point there.
 PY
 
 # --- Phase 5: fill in CLAUDE.md -------------------------------------------

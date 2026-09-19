@@ -1,6 +1,6 @@
 ---
 name: sync-from-template
-description: "Pulls the .claude and .github/prompts folders from Nathan's project-template repo into the current repo (a project scaffolded from that template), with a file-by-file diff and confirmation before anything is overwritten. Trigger this whenever Nathan says '/sync-from-template', asks to sync, pull, or update prompts or tooling from the template, says the template has newer prompts than this repo, asks to check this repo against project-template, or wants to catch up on template changes -- even if he does not name the skill. This is the mirror image of the template repo's own sync-template.prompt.md, which audits the template's internal consistency with itself. This skill instead reaches OUT from a downstream project repo back to the template to pull specific folders in. Do not use this for auditing a repo's own internal folder, README, or CLAUDE.md consistency -- that is a separate concern handled by sync-template.prompt.md inside the template repo itself."
+description: "Pulls the .claude folder (commands and skills) from Nathan's project-template repo into the current repo (a project scaffolded from that template), with a file-by-file diff and confirmation before anything is overwritten. Trigger this whenever Nathan says '/sync-from-template', asks to sync, pull, or update commands, skills, or tooling from the template, says the template has newer tooling than this repo, asks to check this repo against project-template, or wants to catch up on template changes -- even if he does not name the skill. This is the mirror image of the /sync-template command, which audits a repo's internal consistency with itself. This skill instead reaches OUT from a downstream project repo back to the template to pull specific folders in. Do not use this for auditing a repo's own internal folder, README, or CLAUDE.md consistency -- that is a separate concern handled by the /sync-template command."
 ---
 
 # Sync from template
@@ -8,24 +8,24 @@ description: "Pulls the .claude and .github/prompts folders from Nathan's projec
 ## What this does
 
 Reaches from the current repo (a project created from `project-template`) back to
-the template repo, and pulls its current `.claude` and `.github/prompts` folders
-in. Every file that differs is shown as a diff and held for confirmation before
+the template repo, and pulls its current `.claude` folder — commands and
+skills — in. Every file that differs is shown as a diff and held for confirmation before
 it touches anything on disk. Nothing is overwritten silently.
 
 ## When to use this
 
 Run it when Nathan:
 
-- Asks to sync, pull, or update prompts or tooling from the template
-- Says the template has picked up new prompts, skills, or `CLAUDE.md` changes
+- Asks to sync, pull, or update commands, skills, or tooling from the template
+- Says the template has picked up new commands, skills, or `CLAUDE.md` changes
 - Wants to check whether this repo is behind `project-template`
 - Types `/sync-from-template`
 
-Do not confuse this with `sync-template.prompt.md`. That prompt lives inside the
-template repo and audits the template's own internal consistency (folders vs.
-READMEs, prompt configs vs. reality). This skill lives inside a *downstream*
-project repo and pulls two specific folders in from the template. Different
-repo, different direction, different job.
+Do not confuse this with the `/sync-template` command. That command audits a
+repo's own internal consistency — folders vs. READMEs, documented commands vs.
+reality — without reaching outside it. This skill reaches from a *downstream*
+project repo back to the template and pulls a folder in. Different direction,
+different job.
 
 ## One-time setup: the config file
 
@@ -42,7 +42,6 @@ template_repo_url: https://github.com/TeamCastaldi/project-template.git
 template_ref: main
 sync_paths:
   - .claude
-  - .github/prompts
 ```
 
 > [!NOTE]
@@ -196,7 +195,7 @@ skill created a few minutes ago under `mktemp -d`, not anything of Nathan's.
 Once at least one file was applied, suggest (don't run) a commit:
 
 ```text
-chore(tooling): sync .claude/.github/prompts from project-template@<short-sha>
+chore(tooling): sync .claude from project-template@<short-sha>
 ```
 
 When a version was stamped, name it instead -- it means more to a reader six

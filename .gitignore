@@ -21,6 +21,14 @@ desktop.ini
 *.swo
 
 # -------------------------------------------------------
+# Claude Code — personal overrides only. .claude/settings.json is committed
+# and shared; settings.local.json is the per-checkout counterpart, and is
+# where a permission you trust on your own machine belongs. Committing it
+# would impose your grants on everyone who clones the repo.
+# -------------------------------------------------------
+.claude/settings.local.json
+
+# -------------------------------------------------------
 # The template's own test tooling — not a stack choice. The scripts under
 # .claude/skills/ ship with Python and bash tests that CI runs, and those
 # leave artifacts behind wherever they run, including in a project that

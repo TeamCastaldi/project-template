@@ -17,8 +17,14 @@
 #                    .github/dependabot.yml does not configure
 #   MANIFEST_CLAIM   a dependency-manifest filename named in a root doc that
 #                    does not exist on disk
-#   MISSING_TARGET   a script path invoked in a fenced command block that does
+#   MISSING_TARGET   a script path invoked in a fenced command block, or named
+#                    by a Bash() allow rule in .claude/settings.json, that does
 #                    not exist on disk
+#
+# A permission rule is a claim too: an allow rule naming a renamed script grants
+# nothing while still reading like a grant, which is the same rot as a doc naming
+# a file that moved. Matcher *behavior* cannot be checked from here — only that
+# the path a rule names still exists.
 #
 # Scope is deliberately narrow. This checks a handful of high-signal claim
 # shapes about *this repo*; it does not try to understand prose. Files under
@@ -149,6 +155,22 @@ for doc in "${CLAIM_DOCS[@]}"; do
     )
   done < <(grep -nE '\.(sh|py)\b' "$f" | grep -vF "$SKIP_MARKER" || true)
 done
+
+# ---------------------------------------------------------------- check 4
+# Bash() allow rules in settings.json must name a script that exists.
+SETTINGS="$ROOT/.claude/settings.json"
+if [[ -f "$SETTINGS" ]] && command -v jq >/dev/null 2>&1; then
+  while read -r target; do
+    [[ -z "$target" ]] && continue
+    if [[ ! -e "$ROOT/$target" ]]; then
+      printf 'MISSING_TARGET\t.claude/settings.json\t%s named by an allow rule\n' "$target"
+      n_target=$((n_target + 1))
+    fi
+  done < <(
+    jq -r '.permissions.allow // [] | .[]' "$SETTINGS" 2>/dev/null \
+      | sed -n 's/^Bash(bash \([^ )]*\).*/\1/p'
+  )
+fi
 
 echo '---'
 printf 'ECOSYSTEM_CLAIM=%d MANIFEST_CLAIM=%d MISSING_TARGET=%d\n' \

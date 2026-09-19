@@ -8,7 +8,7 @@ No issue required. If you spot something wrong or missing, go straight to a bran
 
 ### 1. Branch
 
-Use the branch-workflow prompt (`.github/prompts/branch-workflow.prompt.md`) or follow the naming convention directly:
+Run `/branch-workflow` or follow the naming convention directly:
 
 ```
 feature/short-description
@@ -23,7 +23,7 @@ Branch names are snake_case. Keep them short and descriptive.
 
 ### 2. Make your changes
 
-Work atomically — one logical change per commit. Use the `session-manager` skill's `/commit-msg` mode (`.claude/skills/session-manager/`) or follow Conventional Commits format directly:
+Work atomically — one logical change per commit. Run `/commit-msg` or follow Conventional Commits format directly:
 
 ```
 feat(scope): add sync-template prompt
@@ -44,6 +44,7 @@ bash scripts/validate_skills.sh                  # skill layout and frontmatter
 bash scripts/check_doc_claims.sh                 # docs vs. what the repo contains
 bash scripts/test_check_doc_claims.sh
 bash scripts/test_check_scaffolded_project.sh
+bash .claude/hooks/test_session-start-hook.sh
 bash .claude/skills/init-project/scripts/test_check_inherited_docs.sh
 bash .claude/skills/sync-from-template/scripts/test_compare_template.sh
 ruff check .claude/skills
@@ -69,13 +70,12 @@ Squash or merge commit, your call.
 
 ## Keeping the template in sync
 
-When you change the folder structure, add a prompt, or update a tooling default — run the sync-template prompt (`.github/prompts/sync-template.prompt.md`) to check for drift between the structure and its documentation. Your future self will thank you.
+When you change the folder structure, add a command or skill, or update a tooling default — run `/sync-template` to check for drift between the structure and its documentation. Your future self will thank you.
 
 ## What's in scope
 
 - Improvements to the folder structure or READMEs
-- New or improved prompts in `.github/prompts/`
-- New or improved skills in `.claude/skills/` — see [`.claude/skills/README.md`](.claude/skills/README.md) for what earns a slot there
+- New or improved commands in `.claude/commands/` and skills in `.claude/skills/` — see [`.claude/README.md`](.claude/README.md) for which of the two a workflow belongs in, and what earns a slot at all
 - CI, dependabot, or tooling updates
 - Bug fixes in any template file
 

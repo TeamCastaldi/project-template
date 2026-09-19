@@ -56,6 +56,24 @@ Be explicit. Examples:
 - Never store PII in profiles
 -->
 
+## Session Config
+
+<!--
+The single source of truth for values the commands in .claude/commands/ and the
+skills in .claude/skills/ need. They are read from here rather than repeated per
+file, so a changed test command is a one-line edit.
+init-project fills these in; until then they are placeholders.
+-->
+
+| Value | Setting |
+|---|---|
+| `TEST_COMMAND` | {set by init-project — e.g. "pytest tests/ -v" or "npm test"} |
+| `LINT_COMMAND` | {set by init-project — e.g. "ruff check ." or "npm run lint"} |
+| `SRC_ROOT` | {set by init-project — the main source folder} |
+| `DOCS_ROOT` | docs/ |
+| `ADR_PATH` | docs/ADRs/ |
+| `SNAPSHOT_PATH` | docs/session-history/ |
+
 ## Code style
 
 <!--

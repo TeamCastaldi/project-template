@@ -147,6 +147,22 @@ assert_hit "finds the second target on a line with two" "$d" MISSING_TARGET "scr
 d="$(fixture)"; printf 'Run:\n```bash\nbash scripts/gone.sh <!-- doc-claims-ok -->\n```\n' > "$d/CONTRIBUTING.md"
 assert_no_hit "doc-claims-ok suppresses a script target" "$d" MISSING_TARGET
 
+# ------------------------------------------------------- settings allow rules
+
+# A permission rule is a claim: an allow rule naming a renamed script grants
+# nothing while still reading like a grant.
+settings() { mkdir -p "$1/.claude"; printf '{"permissions":{"allow":["Bash(bash %s *)"]}}\n' "$2" > "$1/.claude/settings.json"; }
+
+d="$(fixture)"; settings "$d" "scripts/renamed_away.sh"
+assert_hit "flags an allow rule naming a missing script" "$d" MISSING_TARGET "scripts/renamed_away.sh"
+
+d="$(fixture)"; settings "$d" "scripts/present.sh"; touch "$d/scripts/present.sh"
+assert_no_hit "accepts an allow rule naming a real script" "$d" MISSING_TARGET
+
+d="$(fixture)"; mkdir -p "$d/.claude"
+printf '{"permissions":{"deny":["Read(**/.env)"]},"hooks":{}}\n' > "$d/.claude/settings.json"
+assert_no_hit "settings with no allow rules is fine" "$d" MISSING_TARGET
+
 # ---------------------------------------------------------------------- summary
 
 echo "---"
