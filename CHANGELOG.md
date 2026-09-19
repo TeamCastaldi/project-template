@@ -12,6 +12,19 @@ This template ships structure and workflows, not a library API, so SemVer is rea
 - **Minor** — new capability that costs a downstream project nothing to adopt. A new command, skill, workflow, or doc section.
 - **Patch** — fixes and clarifications. Corrected docs, bug fixes in a script, wording.
 
+## Migration steps convention
+
+A **Major** entry that requires action gets its own `### Migration steps` heading — a sibling of `### Added` / `### Changed`, not nested under other prose — holding a flat bullet list, one action per line, each starting with a verb `sync-from-template` recognizes:
+
+- `DELETE <path>` — remove this path if it exists. Idempotent: a repo that already lacks it needs nothing done.
+- `EDIT <path>: <what "done" looks like>` — describe the target state to check for and bring about, not a diff. When the exact content already lives in the template's own copy of `<path>` (its `CLAUDE.md`, say), point at that instead of repeating it here — a second copy is one more place for the two to drift.
+
+Every action names a full path, verbatim, so the skill can act without guessing, and never touches a path this list doesn't name.
+
+List only what the skill's normal add/update sync cannot do on its own: deletions, and edits to files outside `.claude/`. A file merely added or changed under `.claude/` needs no entry — the regular sync already offers it the moment it sees `NEW` or `CHANGED`.
+
+A Major entry with no `### Migration steps` block is still shown to whoever runs the sync, as text to read and act on by hand — it is never guessed at.
+
 ## [Unreleased]
 
 ## [2.0.0] - 2026-09-19
@@ -20,12 +33,15 @@ One mechanism per job. Reusable workflows lived in three places — `.github/pro
 
 ### Migration for existing projects
 
-A project scaffolded from 1.x must act on this by hand:
+A project scaffolded from 1.x must act on this by hand. `/sync-from-template` reads the list below and proposes these actions itself; they're spelled out here for anyone applying them without it.
 
-1. Delete `.github/prompts/`. Nothing reads it any more.
-2. Copy `.claude/commands/` from the template, or run `/sync-from-template`, which now syncs `.claude` alone.
-3. Delete `.claude/skills/session-manager/`, whose three modes are now three commands.
-4. Add a `## Session Config` table to `CLAUDE.md` holding `TEST_COMMAND`, `LINT_COMMAND`, `SRC_ROOT`, `DOCS_ROOT`, `ADR_PATH` and `SNAPSHOT_PATH`. The commands read these from there instead of from per-file Config blocks.
+Pulling `.claude/commands/` in isn't listed below — that's what the skill's normal sync already offers, the moment it sees those files as `NEW`.
+
+### Migration steps
+
+- `DELETE .github/prompts/` — nothing reads it any more; its two workflows are now `.claude/commands/branch-workflow.md` and `.claude/commands/sync-template.md`.
+- `DELETE .claude/skills/session-manager/` — its three modes are now `/session-start`, `/session-end`, `/commit-msg`.
+- `EDIT CLAUDE.md: has a "## Session Config" table holding TEST_COMMAND, LINT_COMMAND, SRC_ROOT, DOCS_ROOT, ADR_PATH and SNAPSHOT_PATH.` Copy the table verbatim from the template's own `CLAUDE.md` if this project's copy doesn't have one yet.
 
 The slash commands keep the names they already had, so nothing you type changes: `/session-start`, `/session-end`, `/commit-msg`, plus `/branch-workflow` and `/sync-template` which were previously attach-a-file prompts.
 
