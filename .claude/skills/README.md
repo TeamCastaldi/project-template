@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code skills that ship with this template. Every project cloned from it inherits this folder, so what lives here is a standing cost on every downstream project — a skill that is wrong for a project still loads its description into that project's every session.
+Claude Code skills that ship with this template. Before adding one, check [`../README.md`](../README.md) — a workflow you invoke by name belongs in `commands/`, not here, and choosing wrong is what produced the layout this folder replaced. Every project cloned from it inherits this folder, so what lives here is a standing cost on every downstream project — a skill that is wrong for a project still loads its description into that project's every session.
 
 ## What belongs here
 

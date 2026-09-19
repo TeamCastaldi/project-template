@@ -79,15 +79,14 @@ git -C "$SRC" ls-files -z | tar -C "$SRC" --null -T - -cf - | tar -x -C "$DEST"
 
 cd "$DEST"
 
-# --- Phase 3: fill the prompt Config blocks -------------------------------
-for prompt in .github/prompts/*.prompt.md; do
-  [[ -f "$prompt" ]] || continue
-  sed -i \
-    -e "s|{set by init-project — e.g. \"pytest tests/ -v\" or \"npm test\"}|$TEST_COMMAND|" \
-    -e "s|{set by init-project — e.g. \"ruff check .\" or \"npm run lint\"}|$LINT_COMMAND|" \
-    -e "s|{set by init-project — the main source folder}|$SRC_ROOT|" \
-    "$prompt"
-done
+# --- Phase 3: fill CLAUDE.md's Session Config -----------------------------
+# One table, read by every command in .claude/commands/. Filling it here is the
+# whole of what used to be a per-prompt-file Config block edit.
+sed -i \
+  -e "s|{set by init-project — e.g. \"pytest tests/ -v\" or \"npm test\"}|$TEST_COMMAND|" \
+  -e "s|{set by init-project — e.g. \"ruff check .\" or \"npm run lint\"}|$LINT_COMMAND|" \
+  -e "s|{set by init-project — the main source folder}|$SRC_ROOT|" \
+  CLAUDE.md
 
 # --- Phase 3: the root README --------------------------------------------
 # Drop the one-time Getting started section, fill name, stack and quick start.
@@ -213,17 +212,8 @@ Dependabot runs weekly against the ecosystems configured in
 `.github/dependabot.yml`. Application dependencies live in `{manifest}`.
 """)
 
-readme = pathlib.Path(".github/prompts/README.md")
-text = readme.read_text()
-text = text.replace(
-    "Most of this template's workflows are now **skills**",
-    "Most of these workflows are now **skills**",
-)
-readme.write_text(text)
-
-skills_readme = pathlib.Path(".claude/skills/README.md")
-if skills_readme.exists():
-    pass  # timeless guide; init-project leaves it alone
+# .claude/README.md and .claude/skills/README.md are timeless guides that
+# init-project leaves alone, so there is nothing to re-point there.
 PY
 
 # --- Phase 5: fill in CLAUDE.md -------------------------------------------

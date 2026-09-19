@@ -89,8 +89,10 @@ rm -rf "$d"
 d="$(fixture)"; printf '# {PROJECT_NAME}\n\n## Stack\n\n- x\n\n## Quick Start\n\nx\n' > "$d/README.md"
 assert_hit "catches an unreplaced {PROJECT_NAME}" "$d" PLACEHOLDER
 
-d="$(fixture)"; printf 'TEST_COMMAND: {set by init-project — e.g. "pytest"}\n' > "$d/.github/prompts/x.prompt.md"
-assert_hit "catches an unfilled prompt Config value" "$d" PLACEHOLDER
+d="$(fixture)"
+printf '# CLAUDE.md\n\n## Project identity\n\nacme.\n\n## Session Config\n\n| `TEST_COMMAND` | {set by init-project — e.g. "pytest"} |\n' \
+  > "$d/CLAUDE.md"
+assert_hit "catches an unfilled Session Config value" "$d" PLACEHOLDER
 
 d="$(fixture)"; mkdir -p "$d/.claude/skills/demo"
 printf 'Replace {PROJECT_NAME} during scaffolding.\n' > "$d/.claude/skills/demo/SKILL.md"

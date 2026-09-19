@@ -8,11 +8,37 @@ The current version is in [`.template-version`](.template-version). A project sc
 
 This template ships structure and workflows, not a library API, so SemVer is read against a *downstream project* rather than a compiler:
 
-- **Major** — a change a downstream project must act on by hand. A folder or file it is expected to have moves or is removed; a skill or prompt changes its contract; a convention changes in a way that makes existing project files wrong.
-- **Minor** — new capability that costs a downstream project nothing to adopt. A new skill, prompt, workflow, or doc section.
+- **Major** — a change a downstream project must act on by hand. A folder or file it is expected to have moves or is removed; a command or skill changes its contract; a convention changes in a way that makes existing project files wrong.
+- **Minor** — new capability that costs a downstream project nothing to adopt. A new command, skill, workflow, or doc section.
 - **Patch** — fixes and clarifications. Corrected docs, bug fixes in a script, wording.
 
 ## [Unreleased]
+
+## [2.0.0] - 2026-09-19
+
+One mechanism per job. Reusable workflows lived in three places — `.github/prompts/`, `.claude/skills/`, and a skill with slash commands hand-rolled inside it — with no rule saying which to use. They now live in two, with a rule.
+
+### Migration for existing projects
+
+A project scaffolded from 1.x must act on this by hand:
+
+1. Delete `.github/prompts/`. Nothing reads it any more.
+2. Copy `.claude/commands/` from the template, or run `/sync-from-template`, which now syncs `.claude` alone.
+3. Delete `.claude/skills/session-manager/`, whose three modes are now three commands.
+4. Add a `## Session Config` table to `CLAUDE.md` holding `TEST_COMMAND`, `LINT_COMMAND`, `SRC_ROOT`, `DOCS_ROOT`, `ADR_PATH` and `SNAPSHOT_PATH`. The commands read these from there instead of from per-file Config blocks.
+
+The slash commands keep the names they already had, so nothing you type changes: `/session-start`, `/session-end`, `/commit-msg`, plus `/branch-workflow` and `/sync-template` which were previously attach-a-file prompts.
+
+### Changed
+
+- **`.github/prompts/` is gone.** It existed for GitHub Copilot's attach-a-file behavior. `branch-workflow.prompt.md` and `sync-template.prompt.md` became `.claude/commands/branch-workflow.md` and `.claude/commands/sync-template.md`, which need no attaching. <!-- inherited-docs-ok -->
+
+- **The `session-manager` skill split into three commands.** It was 322 lines containing a "Mode selection" table routing `/session-start`, `/session-end` and `/commit-msg` to different phases — a dispatcher written by hand because skills cannot be invoked by name. Splitting it also ends a trigger collision with a near-identical marketplace skill, since an explicitly invoked command never competes for phrasing.
+- **Config consolidated into `CLAUDE.md`'s `## Session Config`.** Two competing homes existed: prompt files carried their own `## Config` blocks while `session-manager` already read a `## Session Config` section from `CLAUDE.md`. Splitting into five command files would have made that duplication worse, so there is now one table and every command reads it.
+
+### Added
+
+- `.claude/README.md` — the rule deciding skill versus command, the signs you chose wrong, and a "Workflows that moved" table so an old reference still leads somewhere.
 
 ## [1.1.0] - 2026-09-19
 
@@ -55,6 +81,7 @@ First versioned release. Everything before this point is unversioned history; `1
 
 - The `version-upgrade-planner` skill. It was specific to one person's home lab rather than to building software, its file was named `version-upgrade-planner-SKILL.md` so it never loaded, and a redundant packaged `.skill` archive sat beside it. The working copy lives in a marketplace, where a personal skill belongs.
 
-[Unreleased]: https://github.com/TeamCastaldi/project-template/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/TeamCastaldi/project-template/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/TeamCastaldi/project-template/releases/tag/v2.0.0
 [1.1.0]: https://github.com/TeamCastaldi/project-template/releases/tag/v1.1.0
 [1.0.0]: https://github.com/TeamCastaldi/project-template/releases/tag/v1.0.0
