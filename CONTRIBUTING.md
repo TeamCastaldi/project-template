@@ -41,10 +41,20 @@ CI must be green. The template ships no app code, but it does ship the scripts i
 ```bash
 python3 -m pip install -r requirements-dev.txt   # pinned — same versions CI uses
 bash scripts/validate_skills.sh                  # skill layout and frontmatter
+bash scripts/check_doc_claims.sh                 # docs vs. what the repo contains
+bash scripts/test_check_doc_claims.sh
+bash scripts/test_check_scaffolded_project.sh
 bash .claude/skills/init-project/scripts/test_check_inherited_docs.sh
 bash .claude/skills/sync-from-template/scripts/test_compare_template.sh
 ruff check .claude/skills
 python3 -m pytest .claude/skills/dependabot/scripts -q
+```
+
+If you changed anything a scaffolded project inherits — a doc, a workflow, a prompt Config block — run the scaffold smoke test too. It is the only check that exercises scaffolding end to end, and it catches template-only content leaking into files that travel downstream:
+
+```bash
+bash scripts/simulate_init.sh python-cli /tmp/scaffold-check
+bash scripts/check_scaffolded_project.sh /tmp/scaffold-check
 ```
 
 Install from `requirements-dev.txt` rather than a bare `pip install ruff`. The pins there are what CI enforces, and a newer ruff enables rules CI does not — that difference is a green local run and a red PR.

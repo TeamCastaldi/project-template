@@ -1,0 +1,51 @@
+name: Template CI
+
+# Checks that only make sense in the template repository, kept in their own file
+# so a scaffolded project can delete one path rather than edit a job out of a
+# shared workflow. init-project removes this file, along with
+# scripts/simulate_init.sh.
+#
+# The split is load-bearing, not tidiness: the first step below asserts that
+# check_scaffolded_project.sh REJECTS this repo. That is true here and false in
+# a scaffolded project, so leaving it in skills-ci.yml would turn every
+# downstream repo's CI red the moment it was correctly initialized.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scaffold:
+    name: Scaffold smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # A verifier that passes on everything looks healthy and checks nothing.
+      # An un-initialized repo is the case it must reject.
+      - name: Verifier rejects an un-initialized repo
+        run: |
+          if bash scripts/check_scaffolded_project.sh; then
+            echo "::error::check_scaffolded_project.sh passed on an un-initialized repo; it should fail there."
+            exit 1
+          fi
+          echo "Rejected as expected."
+
+      # Take a fresh copy through the transformations init-project's phases
+      # describe, then assert the result satisfies every post-condition. This is
+      # the only check that exercises scaffolding end to end.
+      - name: Simulate and verify each project shape
+        run: |
+          set -euo pipefail
+          for shape in python-cli ts-web; do
+            dest="$RUNNER_TEMP/scaffold-$shape"
+            echo "── $shape ──"
+            bash scripts/simulate_init.sh "$shape" "$dest"
+            bash scripts/check_scaffolded_project.sh "$dest"
+            bash scripts/check_doc_claims.sh "$dest"
+          done

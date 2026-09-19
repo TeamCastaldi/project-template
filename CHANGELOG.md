@@ -14,6 +14,23 @@ This template ships structure and workflows, not a library API, so SemVer is rea
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-19
+
+Scaffolding is now verified end to end, and documentation claims are checked against the repo rather than trusted.
+
+### Added
+
+- `scripts/check_scaffolded_project.sh` — asserts every post-condition `init-project` promises: no surviving placeholders, no empty section where a placeholder was removed, `docs/foundation.md` written, ADR files indexed and linked from `CLAUDE.md`, and no template-only file carried into the project. Useful on a real project, not only in CI; `init-project` Phase 7 now gates on it.
+- `scripts/simulate_init.sh` and `.github/workflows/template-ci.yml` — take a fresh copy through the transformations the phases describe, for a Python CLI and a TypeScript web app, then verify the result. Also asserts the verifier *rejects* an un-initialized repo, since a check that passes on everything checks nothing.
+- `scripts/check_doc_claims.sh` — resolves ecosystems, manifest filenames, and script paths named in the root docs against `.github/dependabot.yml` and the files on disk. This is the gap `check_inherited_docs.sh` names in its own header and cannot close.
+- Test suites for both new scripts, 33 cases in total.
+
+### Fixed
+
+- `SECURITY.md` claimed Dependabot watched `npm`, which was never configured, and pointed at a `requirements.txt` that does not exist. Both are now correct, and `check_doc_claims.sh` keeps them that way.
+- `.github/workflows/skills-ci.yml` described itself as testing "this template", so every scaffolded project inherited a workflow asserting it was the template. Found by the new scaffold smoke test on its first run.
+- Template-only CI moved out of `skills-ci.yml` into `template-ci.yml`. Its negative test asserts this repo fails scaffolding verification — true in the template, false in a scaffolded project, where it would have turned CI red on correct initialization.
+
 ## [1.0.0] - 2026-09-19
 
 First versioned release. Everything before this point is unversioned history; `1.0.0` marks the template as it stood once it carried a version, a changelog, and CI over its own tooling.
@@ -38,5 +55,6 @@ First versioned release. Everything before this point is unversioned history; `1
 
 - The `version-upgrade-planner` skill. It was specific to one person's home lab rather than to building software, its file was named `version-upgrade-planner-SKILL.md` so it never loaded, and a redundant packaged `.skill` archive sat beside it. The working copy lives in a marketplace, where a personal skill belongs.
 
-[Unreleased]: https://github.com/TeamCastaldi/project-template/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/TeamCastaldi/project-template/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/TeamCastaldi/project-template/releases/tag/v1.1.0
 [1.0.0]: https://github.com/TeamCastaldi/project-template/releases/tag/v1.0.0

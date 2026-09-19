@@ -100,7 +100,12 @@ Once the user approves the plan:
 1. Update the `Config` block in each `.github/prompts/*.prompt.md` file that had a placeholder, with the real values now known.
 1. Update the root `README.md`: fill in `## Stack`, `## Quick Start`, and `## Project Structure` with the real content. Delete the `## Getting started` section — its job, pointing here, is done.
 1. Leave `.template-version` in place, unedited. It records which version of the template this project was scaffolded from, and the `sync-from-template` workflow reads it later to report how far behind the project has fallen and which changelog entries it missed. Deleting it as template residue costs that project its only provenance marker; it is the one inherited file that is *about* the relationship to the template and is meant to stay.
-1. Delete the template's own `CHANGELOG.md` — it is a log of template releases, not of this project. If the project wants a changelog, it starts empty at its own 0.1.0.
+1. Delete the three files that belong to the template rather than to this project:
+   - `CHANGELOG.md` — a log of template releases. If the project wants a changelog, it starts empty at its own 0.1.0.
+   - `.github/workflows/template-ci.yml` — its first step asserts that `check_scaffolded_project.sh` *fails* on this repo, which stops being true the moment you finish. Leaving it turns the project's CI red.
+   - `scripts/simulate_init.sh` — it builds an as-if-initialized fixture from the template, and has nothing to simulate once the real thing exists.
+
+   Keep `.github/workflows/skills-ci.yml` and `scripts/check_scaffolded_project.sh`: the first tests the skills this project keeps, and the second is how anyone later confirms the project still looks properly scaffolded.
 1. Work out and present the cloud environment recommendation below, using the install and test commands just written into the manifest and CI workflow.
 
 ### Recommend the cloud environment settings
@@ -172,6 +177,15 @@ Run the Phase 0 sweep again:
 bash .claude/skills/init-project/scripts/check_inherited_docs.sh
 ```
 
+Then run the two checks that resolve claims against reality, which the sweep's text matching cannot:
+
+```bash
+bash scripts/check_doc_claims.sh          # ecosystems, manifests and commands the docs name
+bash scripts/check_scaffolded_project.sh  # every post-condition these phases promise
+```
+
+`check_scaffolded_project.sh` is the contract for this whole skill: placeholders gone, `docs/foundation.md` written, the ADR files indexed and linked, no template-only file left behind. Expect it to fail until Phases 5 and 6 are done — it is the Phase 7 gate, not a Phase 4 one. Run it here anyway to see what remains.
+
 It checks three things: language still describing this repo as a template, links resolving to paths that do not exist, and references to prompt files that are not in `.github/prompts/`.
 
 Every hit must be either fixed or, if it is a deliberate historical mention — a decision-log entry recording that the repo was scaffolded from a template is the usual one — something you can name out loud as such. When the mention is permanent, mark its line `inherited-docs-ok` so the sweep stays a clean/dirty signal rather than a list of known-good noise that everyone learns to scroll past. Do not report this phase complete on an unexplained hit, and do not describe the sweep as clean while it still exits 1.
@@ -240,6 +254,13 @@ This document is a founding brief, and later sessions should treat it as one: a 
 1. List the ADR files this session wrote in `docs/ADRs/`, and confirm that README's `## Index` table and CLAUDE.md's `## Decision log` both name the exact same set of files.
 1. Restate the Phase 3 cloud environment recommendation (Network access, Environment variables, Setup script) as the three ready-to-paste blocks, so it's not left buried mid-transcript — this is the thing the user is most likely to need again the moment they open the "Add cloud environment" dialog.
 1. List the inherited docs Phase 4 rewrote, separately from the files you created. These are the ones the user is least likely to re-read on their own, so they are the ones worth naming — and if you deleted anything, `docs/api/` most likely, say so plainly rather than leaving them to notice.
+1. Run the scaffolding verifier and report it clean:
+
+   ```bash
+   bash scripts/check_scaffolded_project.sh
+   ```
+
+   It must exit 0 before you call this skill done. Every problem it reports names a promise one of these phases made and did not keep, so fix the cause rather than explaining the output — and never by loosening the check. `bash scripts/check_doc_claims.sh` should be clean too.
 1. Report the final state of the verification sweep, including any hit you deliberately left and why.
 1. Flag anything you wrote but could not exercise — a CI workflow that has never run, a compose file that has never come up. Scaffolding is written from the interview, not from a working system, and the first person to run it should know which parts are still theoretical.
 1. Suggest a commit message: `chore: initialize project from template`.

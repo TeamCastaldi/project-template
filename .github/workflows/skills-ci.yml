@@ -1,9 +1,13 @@
 name: Skills CI
 
-# Tests the tooling this template ships — the scripts its skills call, and the
-# layout those skills have to follow to load at all. This is not the scaffolded
-# project's CI: init-project writes that separately as ci.yml. Both can coexist,
-# and a project that keeps .claude/skills/ should keep this one too.
+# Tests the tooling under .claude/skills/ — the scripts those skills call, and
+# the layout a skill must follow to load at all. Deliberately worded to stay
+# true in a scaffolded project as well: this file travels with the skills it
+# covers, so it must not claim to be testing a template.
+#
+# This is not the application's CI. init-project writes that separately as
+# ci.yml, and the two coexist; only a project that drops .claude/skills/
+# entirely should drop this workflow too.
 
 on:
   push:
@@ -32,11 +36,20 @@ jobs:
       - name: Validate skill layout
         run: bash scripts/validate_skills.sh
 
+      - name: Check documentation claims
+        run: bash scripts/check_doc_claims.sh
+
       - name: Test check_inherited_docs.sh
         run: bash .claude/skills/init-project/scripts/test_check_inherited_docs.sh
 
       - name: Test compare_template.sh
         run: bash .claude/skills/sync-from-template/scripts/test_compare_template.sh
+
+      - name: Test check_doc_claims.sh
+        run: bash scripts/test_check_doc_claims.sh
+
+      - name: Test check_scaffolded_project.sh
+        run: bash scripts/test_check_scaffolded_project.sh
 
   python:
     name: Python lint and tests
