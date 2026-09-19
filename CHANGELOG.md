@@ -38,7 +38,10 @@ The slash commands keep the names they already had, so nothing you type changes:
 
 ### Added
 
-- `.claude/README.md` — the rule deciding skill versus command, the signs you chose wrong, and a "Workflows that moved" table so an old reference still leads somewhere.
+- `.claude/README.md` — the rule deciding hook versus skill versus command, the signs you chose wrong, and a "Workflows that moved" table so an old reference still leads somewhere.
+- `.claude/hooks/session-start-hook.sh` and a `settings.json` wiring it to `SessionStart`. It answers one question as a session opens — can this session run the tests? — by reading `TEST_COMMAND` from `## Session Config` rather than guessing the stack. It never installs, never fails a session, and says nothing when all is well, because a hook cannot be declined and one that cries wolf is one nobody reads.
+- A naming convention for hooks, `hooks/<event>-hook.sh`, plus five standing rules every hook follows. The suffix disambiguates the `/session-start` command from the `SessionStart` hook, which do unrelated jobs.
+- `.claude/settings.local.json` is now gitignored. It was not, so a personal permission grant would have been committed into the shared repo.
 
 ### Fixed
 

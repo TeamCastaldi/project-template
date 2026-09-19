@@ -44,6 +44,7 @@ bash scripts/validate_skills.sh                  # skill layout and frontmatter
 bash scripts/check_doc_claims.sh                 # docs vs. what the repo contains
 bash scripts/test_check_doc_claims.sh
 bash scripts/test_check_scaffolded_project.sh
+bash .claude/hooks/test_session-start-hook.sh
 bash .claude/skills/init-project/scripts/test_check_inherited_docs.sh
 bash .claude/skills/sync-from-template/scripts/test_compare_template.sh
 ruff check .claude/skills

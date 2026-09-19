@@ -51,6 +51,9 @@ jobs:
       - name: Test check_scaffolded_project.sh
         run: bash scripts/test_check_scaffolded_project.sh
 
+      - name: Test session-start-hook.sh
+        run: bash .claude/hooks/test_session-start-hook.sh
+
   python:
     name: Python lint and tests
     runs-on: ubuntu-latest

@@ -5,8 +5,27 @@ Claude Code configuration that travels with the repo. Any repo scaffolded from t
 ```
 .claude/
 ├── commands/     slash commands — workflows you invoke by name
-└── skills/       skills — workflows Claude starts when it recognizes the situation
+├── hooks/        shell scripts the harness runs on a lifecycle event
+├── skills/       skills — workflows Claude starts when it recognizes the situation
+├── settings.json committed and shared: hooks, and any permissions
+└── settings.local.json   personal, gitignored, never committed
 ```
+
+## Which of the three
+
+Everything here automates work. They differ in **who decides it runs**, and choosing wrong is what produced the mess this layout replaced.
+
+| | Hook | Skill | Command |
+|---|---|---|---|
+| Decided by | The harness, on an event | Claude, on recognizing the situation | You, by typing `/name` |
+| What it is | A shell script | Instructions Claude reads | Instructions Claude reads |
+| Judgment | None — identical every run | Judges *when* | You pick when, Claude works out how |
+| Can be declined | No | Yes | Yes |
+| Can block an action | Yes | No | No |
+
+**A command is a request. A hook is a guarantee.** Reach for a hook only when something must happen whether or not anyone remembers to ask *and* must not depend on judgment. Everything else is a skill or a command.
+
+Note the three can share a script. `/sync-template` runs `validate_skills.sh` when you ask for an audit; a hook could run the same script after every edit. The script is the deterministic part — a command wraps it in judgment, a hook wraps it in enforcement.
 
 ## Choosing between a command and a skill
 
@@ -43,6 +62,27 @@ Commands and skills that need project-specific values — test command, source r
 
 - A **command** is `commands/<name>.md`, invoked as `/<name>`, with YAML frontmatter carrying at least a `description`.
 - A **skill** is `skills/<name>/SKILL.md` — the filename is exact, and `scripts/validate_skills.sh` enforces the rest.
+- A **hook** is `hooks/<event>-hook.sh`, wired to its event in `settings.json`.
+
+### Naming hooks
+
+A hook file is named for the event that fires it, in kebab-case, with a `-hook` suffix: `SessionStart` becomes `hooks/session-start-hook.sh`, `PostToolUse` becomes `hooks/post-tool-use-hook.sh`.
+
+The suffix is redundant with the folder, and deliberate anyway. This repo ships both a `/session-start` command and a `SessionStart` hook, and they do entirely unrelated jobs — one runs a mission interview when you ask for it, the other checks the environment on every session whether you asked or not. Without the suffix, "session-start" in a conversation, a grep, or a commit message is ambiguous between a thing you invoke and a thing that invokes itself. That ambiguity is expensive in exactly the moment you are debugging one of them.
+
+### Rules every hook follows
+
+- **Exit 0** unless it is deliberately blocking an action. A hook cannot be declined, so a non-zero exit from a hook that was only meant to advise takes the repo hostage.
+- **Stay silent on success.** A hook that prints on every session becomes noise people scroll past, and then it is useless on the day it has something real to say.
+- **Never mutate.** No installs, no writes to the working tree, no lockfile edits. It runs unattended and unasked; report the problem and let a person decide.
+- **Stay fast.** It runs before every session. Give it a `timeout` in `settings.json` and keep it well under.
+- **Ship a test.** `hooks/test_<name>-hook.sh`, covering the silent cases especially — those are the ones that decide whether anyone still trusts it.
+
+## Settings
+
+`settings.json` is committed, so everything in it applies to every clone. `settings.local.json` is gitignored and is where a permission you trust on your own machine belongs — putting it in the shared file imposes your judgment on people whose repo you have never seen.
+
+The bar for the shared file is high for the same reason hooks are: nobody approves it per run.
 
 ## Workflows that moved
 
