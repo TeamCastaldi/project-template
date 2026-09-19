@@ -37,6 +37,7 @@ Check the following for drift:
 7. **Prompt Config blocks**: Do `TEST_COMMAND`, `LINT_COMMAND`, `SRC_ROOT` etc. across `.github/prompts/*.prompt.md` still match reality?
 8. **docs/foundation.md**: Still accurate to the project's current direction, or has scope drifted enough to warrant an update?
 9. **CONTRIBUTING.md**: Does it reference any prompts or paths that have changed?
+10. **ADRs**: Does `docs/ADRs/README.md`'s `## Index` table list exactly the `.md` files actually in that folder, with current Status values? Does CLAUDE.md's `## Decision log` link to that same set of files, with no decision's reasoning duplicated into CLAUDE.md itself?
 
 [PHASE 2: REPORT]
 Present a drift report:

@@ -109,12 +109,13 @@ Remove items when resolved and add a note to the relevant ADR or spec.
 ## Decision log
 
 <!--
-A running summary of key decisions. For full context see docs/ADRs/.
-Format:
-### ADR-NNN — Short title
-- One line summary of the decision
-- Key consequence
-- What was ruled out
+This section is a pointer, not a log. Every architecture or stack decision
+gets its own file in docs/ADRs/ (naming convention and status values are in
+docs/ADRs/README.md) — do not restate a decision's content here. List one
+line per ADR, linking to its file, and keep this list and the ADRs README's
+Index table naming the same set of files.
+Format: a bullet per decision, e.g. "ADR-001: Short title — one-line summary",
+with the title linking to its file in docs/ADRs/.
 -->
 
 ---
