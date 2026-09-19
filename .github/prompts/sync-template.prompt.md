@@ -38,6 +38,8 @@ Check the following for drift:
 8. **docs/foundation.md**: Still accurate to the project's current direction, or has scope drifted enough to warrant an update?
 9. **CONTRIBUTING.md**: Does it reference any prompts or paths that have changed?
 10. **ADRs**: Does `docs/ADRs/README.md`'s `## Index` table list exactly the `.md` files actually in that folder, with current Status values? Does CLAUDE.md's `## Decision log` link to that same set of files, with no decision's reasoning duplicated into CLAUDE.md itself?
+11. **Skill layout**: Does `bash scripts/validate_skills.sh` exit 0? It catches a skill whose `SKILL.md` is misnamed (and so never loads), missing frontmatter, a `name` that disagrees with its directory, or a stray packaged `.skill` archive.
+12. **Version and changelog**: If this audit is running on the template repo itself, does `CHANGELOG.md` have an entry describing the change that prompted this run, and does `.template-version` need a bump under the rules in that file's header? A structural change that a downstream project must act on by hand is a Major bump, not a silent edit.
 
 [PHASE 2: REPORT]
 Present a drift report:

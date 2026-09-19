@@ -12,9 +12,15 @@
 # Output (to stdout):
 #   TEMP_CLONE=<path>
 #   TEMPLATE_SHA=<short sha>
+#   TEMPLATE_VERSION=<version>   from the template's .template-version
+#   PROJECT_VERSION=<version>    from the project's .template-version
 #   ---
 #   <STATUS>\t<path relative to repo root>
 #     STATUS is one of: NEW, CHANGED, SAME, LOCAL_ONLY
+#
+# Either version reads "unknown" when that side has no .template-version —
+# a project scaffolded before the template carried one, or a template ref
+# predating it. That is a reportable state, not an error.
 
 set -euo pipefail
 
@@ -41,6 +47,21 @@ git clone --quiet --depth 1 --filter=blob:none --sparse --branch "$TEMPLATE_REF"
 
 TEMPLATE_SHA=$(git -C "$TMP_DIR" rev-parse --short HEAD)
 echo "TEMPLATE_SHA=$TEMPLATE_SHA"
+
+# Read the template's version from the commit rather than the working tree:
+# the sparse checkout above is scoped to SYNC_PATHS, so a root-level file is
+# not guaranteed to be on disk. Both sides report "unknown" rather than
+# failing — a project scaffolded before the template was versioned simply has
+# no marker, and the sync workflow reports that as its own case.
+TEMPLATE_VERSION=$(git -C "$TMP_DIR" show "HEAD:.template-version" 2>/dev/null | head -n1 | tr -d '[:space:]')
+echo "TEMPLATE_VERSION=${TEMPLATE_VERSION:-unknown}"
+
+PROJECT_VERSION=""
+if [ -f "$PROJECT_ROOT/.template-version" ]; then
+  PROJECT_VERSION=$(head -n1 "$PROJECT_ROOT/.template-version" | tr -d '[:space:]')
+fi
+echo "PROJECT_VERSION=${PROJECT_VERSION:-unknown}"
+
 echo "---"
 
 for sp in "${SYNC_PATHS[@]}"; do

@@ -17,6 +17,10 @@ That run scaffolds the folders this project actually needs (e.g. `backend/`, `fr
 
 Once that's done, delete this "Getting started" section.
 
+### Staying current with the template
+
+`.template-version` records which template version this repo was scaffolded from — leave it in place. The **sync-from-template** skill reads it to report how far behind the project has fallen and which [`CHANGELOG.md`](CHANGELOG.md) entries it missed, rather than just diffing every file blind.
+
 ## Stack
 
 <!-- init-project fills this in -->

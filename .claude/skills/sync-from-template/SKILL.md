@@ -80,6 +80,24 @@ The script's output gives you four buckets per file: `NEW`, `CHANGED`, `SAME`,
 copy lives) and `TEMPLATE_SHA=<short sha>` (the commit you're comparing
 against). Keep both of these -- you need them for the rest of the workflow.
 
+It also prints `TEMPLATE_VERSION` and `PROJECT_VERSION`, read from each side's
+`.template-version`. These turn the report from a raw file diff into a
+statement of how far behind this project is:
+
+- **Both known and different** -- name the gap (`1.4.0 -> 2.1.0`) and read
+  `CHANGELOG.md` from `$TEMP_CLONE` for the entries between them. A **Major**
+  entry means a downstream project is expected to act by hand, so surface those
+  before showing any file diffs: they explain *why* files changed, which is the
+  thing a file-by-file diff cannot tell anyone.
+- **Both known and equal** -- say so. Any `CHANGED` file is then a local edit,
+  not an upstream update, and that is worth pointing out rather than offering to
+  overwrite.
+- **`PROJECT_VERSION=unknown`** -- this project predates template versioning.
+  Offer to write the current `TEMPLATE_VERSION` into `.template-version` as part
+  of this sync, so the next run can report a real gap.
+- **`TEMPLATE_VERSION=unknown`** -- the pinned ref predates versioning. Fall back
+  to the SHA and say that is what you are comparing against.
+
 We use an ephemeral clone rather than a persistent `template` git remote on
 purpose: the only thing that needs to know where the template lives is the
 config file above. If the template ever moves, Nathan changes one YAML value
@@ -96,12 +114,18 @@ Present the comparison grouped by status, in this format:
 TEMPLATE SYNC REPORT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Comparing against project-template @ <template_ref> (commit <sha>)
+Version: <PROJECT_VERSION> -> <TEMPLATE_VERSION>
 
+⚠️  Needs manual action: [Major changelog entries between the two versions]
 ✅ Up to date:       [files marked SAME]
 🔄 Changed upstream: [files marked CHANGED]
 ➕ New in template:  [files marked NEW]
 ❓ Local-only:       [files marked LOCAL_ONLY -- never auto-removed]
 ```
+
+Drop the version line if both sides are `unknown`, and drop the manual-action
+row when there are no Major entries between the two versions -- an empty row
+reads as a warning that never resolves.
 
 If every file is `SAME`, say so plainly and stop -- there's nothing to
 confirm or apply.
@@ -137,7 +161,25 @@ intentional local customization or something the template dropped; either
 way it needs a human to look at it deliberately, not this skill deciding on
 its behalf.
 
-### 4. Clean up
+### 4. Stamp the version
+
+Once at least one file has been applied, write the template version this sync
+brought the project up to:
+
+```bash
+echo "$TEMPLATE_VERSION" > "$PROJECT_ROOT/.template-version"
+```
+
+Do this only when files were actually applied, and only when
+`TEMPLATE_VERSION` is not `unknown`. A project that declined every change is
+still on its old version, and a marker claiming otherwise makes the next sync
+report a gap that does not exist -- worse than having no marker at all.
+
+If Nathan applied only some of the `CHANGED` files, say so and ask before
+stamping: the version is a claim about the whole synced tree, and a partial
+apply does not support it.
+
+### 5. Clean up
 
 Once Nathan is done applying changes (or decides not to apply any), remove
 the temp clone:
@@ -149,12 +191,19 @@ rm -rf "$TEMP_CLONE"
 This is safe to run without asking first -- `$TEMP_CLONE` is a directory this
 skill created a few minutes ago under `mktemp -d`, not anything of Nathan's.
 
-### 5. Suggest a commit
+### 6. Suggest a commit
 
 Once at least one file was applied, suggest (don't run) a commit:
 
 ```text
 chore(tooling): sync .claude/.github/prompts from project-template@<short-sha>
+```
+
+When a version was stamped, name it instead -- it means more to a reader six
+months out than a short SHA does:
+
+```text
+chore(tooling): sync tooling from project-template 1.4.0 -> 2.1.0
 ```
 
 ## Boundaries

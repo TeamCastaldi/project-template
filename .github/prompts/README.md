@@ -26,7 +26,7 @@ These were prompt files in earlier versions of the template. If a doc still poin
 | `session-start.prompt.md` | The `session-manager` skill, `/session-start` mode <!-- inherited-docs-ok --> |
 | `create-commit.prompt.md` | The `session-manager` skill, `/commit-msg` mode <!-- inherited-docs-ok --> |
 
-The template also ships `docs-updater`, `dependabot`, `sync-from-template`, and `version-upgrade-planner` skills, which never had prompt-file equivalents. See `.claude/skills/` for the full set.
+The template also ships `docs-updater`, `dependabot`, and `sync-from-template` skills, which never had prompt-file equivalents. See [`.claude/skills/README.md`](../../.claude/skills/README.md) for the full set and for what belongs there.
 
 `troubleshoot.prompt.md` was removed without a replacement in this repo. If you want a structured debugging workflow, add one as a skill. <!-- inherited-docs-ok -->
 
