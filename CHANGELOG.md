@@ -27,6 +27,15 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
+### Added
+
+- `/roadmap` — a command to create, evaluate, add to and complete a roadmap. Its guardrail is grounding: every item cites a repo path, an open issue, or an explicit request, and `evaluate` reports stated goals missing from the roadmap without adding them. `add` and `complete` change exactly one line, copy the neighbouring item's format, and show `git diff` as proof. A command rather than a skill because the moment to touch a roadmap is one you choose.
+- `scripts/check_roadmap.sh` and its tests (32 cases) — inventories a roadmap's checklist items and flags missing or broken citations, unticked items whose deliverable already exists, and ticked ones whose deliverable is gone. `/roadmap` runs it instead of reading the file and forming an opinion.
+- `ROADMAP_PATH` in `CLAUDE.md`'s `## Session Config`, defaulting to `docs/plans/ROADMAP.md`. `/roadmap` falls back to the same default when the row is absent, so a project on 2.0.0 needs no edit to adopt it.
+- A command, skill and hook index in `.claude/README.md`. `/sync-template` already audited against one, and there was none.
+
+`/sync-from-template` carries `.claude/` only, so a project that pulls `/roadmap` in that way does not get `scripts/check_roadmap.sh`. The command says so and labels its findings unverified until the script and its test are copied across by hand.
+
 ## [2.0.0] - 2026-09-19
 
 One mechanism per job. Reusable workflows lived in three places — `.github/prompts/`, `.claude/skills/`, and a skill with slash commands hand-rolled inside it — with no rule saying which to use. They now live in two, with a rule.
