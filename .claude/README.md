@@ -11,6 +11,24 @@ Claude Code configuration that travels with the repo. Any repo scaffolded from t
 └── settings.local.json   personal, gitignored, never committed
 ```
 
+## What is here
+
+Every command, skill and hook in this folder, one line each. `/sync-template` checks this index against the files — add a row when you add one, remove it when you remove one.
+
+| Kind | Name | What it does |
+|---|---|---|
+| Command | `/branch-workflow` | Start a unit of work on a named branch, with a starter checklist per work type |
+| Command | `/commit-msg` | Draft a Conventional Commit message from the staged diff and session context |
+| Command | `/roadmap` | Create, evaluate, add to and tick off the roadmap at `ROADMAP_PATH`, citing a source for every item |
+| Command | `/session-end` | Write the session snapshot, run the test and lint gate, then commit and push behind confirmations |
+| Command | `/session-start` | Scan repo state and history, pick a mission, and work it one verified step at a time |
+| Command | `/sync-template` | Audit folders, READMEs and tooling for drift from each other, then fix it |
+| Skill | `dependabot` | Triage open Dependabot PRs by SemVer risk and consolidate the safe ones |
+| Skill | `docs-updater` | Bring READMEs and `CLAUDE.md` up to date with work a session completed |
+| Skill | `init-project` | One-time setup interview and scaffolding for a fresh clone |
+| Skill | `sync-from-template` | Pull newer commands and skills from the upstream template repo, with a diff per file |
+| Hook | `session-start-hook.sh` | On `SessionStart`, warn if `TEST_COMMAND` cannot run; silent otherwise |
+
 ## Which of the three
 
 Everything here automates work. They differ in **who decides it runs**, and choosing wrong is what produced the mess this layout replaced.
