@@ -133,7 +133,7 @@ Then the full file, in the default format.
 
 ### Verify
 
-Write the file, creating its parent folder only if missing, then run the check script. `NO_SOURCE` and `BROKEN_SOURCE` must both be 0 — fix any before reporting done. A `MAYBE_DONE` on a fresh roadmap means the item is already built: take it out, since finished work belongs in `CLAUDE.md`'s Done, not here.
+Write the file, creating its parent folder only if missing, then run the check script. `NO_SOURCE` and `BROKEN_SOURCE` must both be 0 — fix any before reporting done. A `MAYBE_DONE` means the deliverable file already exists, not that the work is finished — an In progress item's file usually does. Open it: if it implements the item, take the item out, since finished work belongs in `CLAUDE.md`'s Done; if it is a stub or partial, keep the item and say so.
 
 ## 2. EVALUATE
 
