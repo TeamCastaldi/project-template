@@ -30,6 +30,8 @@
       "Bash(bash scripts/check_scaffolded_project.sh *)",
       "Bash(bash scripts/test_check_doc_claims.sh *)",
       "Bash(bash scripts/test_check_scaffolded_project.sh *)",
+      "Bash(bash scripts/check_roadmap.sh *)",
+      "Bash(bash scripts/test_check_roadmap.sh *)",
       "Bash(bash .claude/hooks/session-start-hook.sh *)",
       "Bash(bash .claude/hooks/test_session-start-hook.sh *)",
       "Bash(bash .claude/skills/init-project/scripts/check_inherited_docs.sh *)",

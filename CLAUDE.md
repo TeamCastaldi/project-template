@@ -73,6 +73,7 @@ init-project fills these in; until then they are placeholders.
 | `DOCS_ROOT` | docs/ |
 | `ADR_PATH` | docs/ADRs/ |
 | `SNAPSHOT_PATH` | docs/session-history/ |
+| `ROADMAP_PATH` | docs/plans/ROADMAP.md |
 
 ## Code style
 

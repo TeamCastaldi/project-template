@@ -27,6 +27,20 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
+### Added
+
+- `/roadmap` — a command to create, evaluate, add to and complete a roadmap. Its guardrail is grounding: every item cites a repo path, an open issue, or an explicit request, and `evaluate` reports stated goals missing from the roadmap without adding them. `add` and `complete` change exactly one line, copy the neighbouring item's format, and show `git diff` as proof. A command rather than a skill because the moment to touch a roadmap is one you choose.
+- `scripts/check_roadmap.sh` and its tests (32 cases) — inventories a roadmap's checklist items and flags missing or broken citations, unticked items whose deliverable already exists, and ticked ones whose deliverable is gone. `/roadmap` runs it instead of reading the file and forming an opinion.
+- `ROADMAP_PATH` in `CLAUDE.md`'s `## Session Config`, defaulting to `docs/plans/ROADMAP.md`. `/roadmap` falls back to the same default when the row is absent, so an existing project needs no edit to adopt it.
+- A command, skill and hook index in `.claude/README.md`. `/sync-template` already audited against one, and there was none.
+- `.claude/skills/sync-from-template/tooling_paths.txt` — the scripts outside `.claude/` that its commands and skills run: `check_roadmap.sh`, `check_doc_claims.sh`, `check_scaffolded_project.sh`, `validate_skills.sh`, and their tests. `sync-from-template` now offers them alongside `.claude/`, so a synced project gets `/roadmap` and the script it runs together. The list is read from the template, so a new dependency is one line upstream and no downstream config changes. Anything unlisted stays untouched — `scripts/` also holds `simulate_init.sh`, which `init-project` removes on purpose and a whole-folder sync would keep re-offering.
+
+### Changed
+
+- `compare_template.sh` accepts a single file as a sync path. It previously handed every path to cone-mode sparse checkout, which rejects a file outright (`fatal: … is not a directory`, exit 128). Directories still go to sparse checkout; files are written from the commit afterwards, keeping their executable bit.
+
+The first sync after upgrading runs the project's older `compare_template.sh`, which knows nothing of the list: it pulls the new script, and the skill then runs the comparison again so the tooling files are offered in the same session.
+
 ## [2.1.0] - 2026-09-27
 
 Pulled forward what two real projects' test-suite audits (one on a Python/pytest backend, one on a Python MCP server) converged on independently: the same handful of mock-and-fake mistakes and the same missing-coverage patterns kept showing up. Written up once here instead of being rediscovered per project.
