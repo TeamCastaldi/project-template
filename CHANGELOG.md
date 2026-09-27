@@ -27,6 +27,20 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-27
+
+Pulled forward what two real projects' test-suite audits (one on a Python/pytest backend, one on a Python MCP server) converged on independently: the same handful of mock-and-fake mistakes and the same missing-coverage patterns kept showing up. Written up once here instead of being rediscovered per project.
+
+### Added
+
+- `.claude/skills/testing-standards/` — a stack-agnostic skill applied whenever writing or reviewing a test, in any language or runner. Encodes Khorikov's four properties of a good test, a mock/fake table (what an outgoing call, an incoming stub, your own state, and your own internal function may each be asserted against — plus a new **F1** rule that a fake must be no more forgiving than the real dependency it replaces), the no-tautology/no-duplicate/don't-test-the-framework rules, and four recurring smells found in real audits (lenient fakes, weak `"error" in result`-style checks, read tools tested only on their empty case, and settings that are never proven to be wired up).
+- `.claude/commands/audit-tests.md` (`/audit-tests`) — the occasional, deliberate full-suite audit this skill's rules feed into: a file-by-file review against a fixed, machine-validated JSON schema, a coverage-based redundancy shortlist, and mutation-testing spot checks (with a per-stack tool table and a documented workaround for mutation tools that refuse to run against a project's real layout). Writes a dated `docs/audits/YYYY-MM-DD-test-suite/` folder; self-provisions that folder's README on first use rather than shipping an empty stub in every clone.
+- `.claude/skills/testing-standards/scripts/validate_test_audit.py` (with its own test suite) — validates an audit's `files.json` against the schema: required keys, allowed verdicts and rule codes, that a file's verdict actually follows from its findings, and that `is_redundant` matches its redundancy findings. Takes an optional `--tests-file` (a plain `<file>\t<test id>` list any stack's runner can produce) to also check that every named test really exists and, with `--complete`, that every test file has an entry — but runs schema-only validation with neither, so it's useful before a project has wired up that collection step.
+
+### Changed
+
+- `.github/workflows/skills-ci.yml` and `CONTRIBUTING.md`'s local-check list now run `pytest` over all of `.claude/skills`, not just the dependabot skill's scripts, so a new skill's tests are picked up without a further CI edit. A project that already synced an older `.claude/` and wants this: change the `python -m pytest .claude/skills/dependabot/scripts -q` line in its own `.github/workflows/skills-ci.yml` (and the matching line in `CONTRIBUTING.md`) to `python -m pytest .claude/skills -q`.
+
 ## [2.0.0] - 2026-09-19
 
 One mechanism per job. Reusable workflows lived in three places — `.github/prompts/`, `.claude/skills/`, and a skill with slash commands hand-rolled inside it — with no rule saying which to use. They now live in two, with a rule.
