@@ -34,7 +34,7 @@ bash scripts/check_roadmap.sh . {ROADMAP_PATH}
 
 It prints one line per checklist item — `OPEN`, `BLOCKED` or `DONE`, with line number and section — and flags `NO_SOURCE`, `BROKEN_SOURCE`, `MAYBE_DONE` (unticked, but every backticked path in it exists) and `DONE_MISSING` (ticked, but a path it names is gone). Exit 0 is no flags, 1 is at least one flag, 2 is no roadmap at that path. Its header block documents the rest.
 
-- **Script not present** — a project that pulled this command in through `/sync-from-template` gets `.claude/` only, not `scripts/`. Say so once, recommend copying `scripts/check_roadmap.sh` and its test across from the template, and continue with a careful read-through — labelling every finding `unverified — no check_roadmap.sh`.
+- **Script not present** — the project has this command but not the script it runs, usually because it was synced before the sync carried scripts. Say so once, recommend running `/sync-from-template`, which offers `scripts/check_roadmap.sh` and its test alongside `.claude/`, and continue with a careful read-through — labelling every finding `unverified — no check_roadmap.sh`.
 - **Zero items reported, file not empty** — the roadmap is not a markdown checklist. Read it directly and follow its structure for `add` and `complete`; label `evaluate` findings unverified.
 
 ## Default format
