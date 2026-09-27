@@ -76,5 +76,5 @@ jobs:
       - name: Lint Python scripts
         run: ruff check .claude/skills
 
-      - name: Test categorize_prs.py
-        run: python -m pytest .claude/skills/dependabot/scripts -q
+      - name: Test skill scripts
+        run: python -m pytest .claude/skills -q

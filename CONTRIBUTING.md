@@ -49,7 +49,7 @@ bash .claude/hooks/test_session-start-hook.sh
 bash .claude/skills/init-project/scripts/test_check_inherited_docs.sh
 bash .claude/skills/sync-from-template/scripts/test_compare_template.sh
 ruff check .claude/skills
-python3 -m pytest .claude/skills/dependabot/scripts -q
+python3 -m pytest .claude/skills -q
 ```
 
 If you changed anything a scaffolded project inherits — a doc, a workflow, a prompt Config block — run the scaffold smoke test too. It is the only check that exercises scaffolding end to end, and it catches template-only content leaking into files that travel downstream:
