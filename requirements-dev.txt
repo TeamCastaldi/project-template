@@ -8,4 +8,4 @@
 # red build on a PR that changed no Python at all. Dependabot's pip ecosystem
 # watches this file, so a bump arrives as a reviewable PR instead.
 pytest==9.1.1
-ruff==0.16.8
+ruff==0.16.9
