@@ -15,7 +15,8 @@
 #                      stale unless deliberately historical)
 #
 # Files under .claude/skills/ are skipped: a skill that explains the template
-# is supposed to mention it.
+# is supposed to mention it. Files under node_modules/ are skipped for the
+# same reason: installed dependencies' READMEs aren't this repo's docs.
 #
 # Every hit needs a human call. A deliberate historical mention — a decision
 # log recording that the repo was scaffolded from a template — is a
@@ -73,7 +74,7 @@ while IFS= read -r -d '' f; do
   FILES+=("$f")
 done < <(
   find "$ROOT" \
-    -type d \( -name .git -o -path "$ROOT/.claude/skills" \) -prune -o \
+    -type d \( -name .git -o -name node_modules -o -path "$ROOT/.claude/skills" \) -prune -o \
     -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' \) -print0
 )
 
