@@ -41,6 +41,11 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 The first sync after upgrading runs the project's older `compare_template.sh`, which knows nothing of the list: it pulls the new script, and the skill then runs the comparison again so the tooling files are offered in the same session.
 
+### Fixed
+
+- `check_inherited_docs.sh` and `check_scaffolded_project.sh` now prune `node_modules/` from their doc sweeps, the same way they already skip `.claude/skills/`. Neither previously excluded it, so any downstream project with dependencies installed had every installed package's README scanned for template language and broken links — hundreds of false `TEMPLATE_LANGUAGE`/`BROKEN_LINK` hits from ordinary phrases like "template" or a relative link that only resolves inside that package.
+- `check_doc_claims.sh`'s ecosystem-claim check now accepts single-quoted `package-ecosystem:` values in `dependabot.yml`, not just double-quoted ones — both are ordinary YAML. It also no longer aborts the entire script with no output when the extraction pipeline matches zero lines (a `dependabot.yml` using only single quotes, or configuring no ecosystems yet), which under `set -euo pipefail` previously killed the whole run before it could print anything, including its own summary line.
+
 ## [2.1.0] - 2026-09-27
 
 Pulled forward what two real projects' test-suite audits (one on a Python/pytest backend, one on a Python MCP server) converged on independently: the same handful of mock-and-fake mistakes and the same missing-coverage patterns kept showing up. Written up once here instead of being rediscovered per project.

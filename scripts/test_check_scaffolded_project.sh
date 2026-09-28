@@ -98,6 +98,11 @@ d="$(fixture)"; mkdir -p "$d/.claude/skills/demo"
 printf 'Replace {PROJECT_NAME} during scaffolding.\n' > "$d/.claude/skills/demo/SKILL.md"
 assert_clean "ignores placeholders documented inside skills" "$d"
 
+# An installed dependency's docs are not this project's docs, whatever they say.
+d="$(fixture)"; mkdir -p "$d/node_modules/some-pkg"
+printf 'Config: {set by init-project — e.g. "npm test"}\n' > "$d/node_modules/some-pkg/README.md"
+assert_clean "ignores placeholder-shaped text inside node_modules" "$d"
+
 # -------------------------------------------------------------------- CLAUDE.md
 
 d="$(fixture)"

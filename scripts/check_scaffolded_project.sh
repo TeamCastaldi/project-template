@@ -69,7 +69,8 @@ problem() {
 
 # Placeholders the scaffolding phases are supposed to replace. Files under
 # .claude/skills/ are skipped: a skill that documents a placeholder has to
-# spell it out.
+# spell it out. Files under node_modules/ are skipped for the same reason:
+# installed dependencies' docs aren't this repo's docs.
 PLACEHOLDER_RE='\{PROJECT_NAME\}|init-project fills this in|\{set by init-project'
 
 while IFS= read -r -d '' f; do
@@ -80,7 +81,7 @@ while IFS= read -r -d '' f; do
   done < <(grep -niE "$PLACEHOLDER_RE" "$f" || true)
 done < <(
   find "$ROOT" \
-    -type d \( -name .git -o -path "$ROOT/.claude/skills" \) -prune -o \
+    -type d \( -name .git -o -name node_modules -o -path "$ROOT/.claude/skills" \) -prune -o \
     -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' \) -print0
 )
 

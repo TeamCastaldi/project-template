@@ -104,6 +104,19 @@ echo "This template ships skills." > "$d/.claude/skills/demo/SKILL.md"
 echo "# A project" > "$d/README.md"
 assert_no_hit "skips files under .claude/skills" "$d" TEMPLATE_LANGUAGE
 
+# Installed dependencies ship their own READMEs, with their own relative links
+# and wording. They are not this repo's documentation.
+node_modules_fixture() {
+  local d
+  d="$(fixture)"; mkdir -p "$d/node_modules/some-pkg" "$d/packages/app/node_modules/other-pkg"
+  echo "Use this template to start. See [changes](CHANGELOG.md)." > "$d/node_modules/some-pkg/README.md"
+  echo "A stack-agnostic lib. See [docs](docs/api.md)." > "$d/packages/app/node_modules/other-pkg/README.md"
+  echo "# A project" > "$d/README.md"
+  printf '%s' "$d"
+}
+assert_no_hit "skips template language inside node_modules" "$(node_modules_fixture)" TEMPLATE_LANGUAGE
+assert_no_hit "skips broken links inside node_modules" "$(node_modules_fixture)" BROKEN_LINK
+
 # ----------------------------------------------------------------- broken links
 
 d="$(fixture)"; echo "See [the guide](docs/nope.md)." > "$d/README.md"
