@@ -84,3 +84,9 @@ When you change the folder structure, add a command or skill, or update a toolin
 
 - Application code or a hardcoded stack (this is a stack-agnostic template — stack choice happens per-project via the `init-project` skill, not in the template itself)
 - Skills tied to one person's infrastructure or non-engineering workflows — every cloned project inherits `.claude/skills/`, so a homelab or personal skill becomes dead weight in repos that have nothing to do with it
+
+## Where the template's own records go
+
+Records about the template go in [`docs/template/`](docs/template/): the session snapshots `/session-end` writes while you work on it, and any review or plan about how it should change. Never put them in `docs/session-history/` or `docs/plans/`. This repo's `SNAPSHOT_PATH` already points at `docs/template/`, so `/session-end` writes there without being told.
+
+The split matters because `init-project` deletes `docs/template/` when it scaffolds a project and removes nothing else under `docs/`. A snapshot or review left anywhere else travels into every project built from the template. `scripts/check_scaffolded_project.sh` fails a scaffold that still has the folder, and the scaffold smoke test above runs it.
