@@ -24,7 +24,7 @@ These ship with the repo and are run by CI. Each has a header block explaining i
 |---|---|
 | `validate_skills.sh` | Every `.claude/skills/*/` has a correctly named `SKILL.md` with valid frontmatter, and no stray packaged `.skill` archive |
 | `check_doc_claims.sh` | Claims the root docs make — ecosystems, manifest filenames, script paths — resolve against what the repo actually contains |
-| `check_scaffolded_project.sh` | A repo satisfies every post-condition `init-project` promises: no placeholders, `docs/foundation.md` present, ADRs indexed and linked, no template-only file left behind |
+| `check_scaffolded_project.sh` | A repo satisfies every post-condition `init-project` promises: no placeholders, `docs/foundation.md` present, ADRs indexed and linked, no template-only file or folder left behind (the template's `docs/template/` records, or a `SNAPSHOT_PATH` still pointing there) |
 | `check_roadmap.sh` | A roadmap's checklist items: inventories each with its line and section, and flags items with no `source:`, a cited path that is gone, an unticked item whose deliverable already exists, or a ticked one whose deliverable does not. Run by `/roadmap` |
 | `simulate_init.sh` | Not a check — builds an as-if-initialized fixture so CI can verify scaffolding end to end |
 

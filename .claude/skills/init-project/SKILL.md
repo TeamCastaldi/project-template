@@ -29,7 +29,7 @@ Check four things before you ask anything:
 Checks 1 and 4 together decide which job you are doing. Settle this before asking anything else:
 
 - **Not yet initialized** → a normal full run. Continue to Phase 1.
-- **Already initialized, and the sweep found hits** → this project was scaffolded before the skill re-pointed inherited docs, so its folders, CI, and `CLAUDE.md` are fine and only the shipped docs were left describing a different repository. Offer to run **Phase 4 alone**. It needs no interview and no plan gate — read the repo to answer what the interview would have asked, then go. Skip Phases 1, 2, 3, 5, and 6 entirely; do not re-scaffold a working project.
+- **Already initialized, and the sweep found hits** → this project was scaffolded before the skill re-pointed inherited docs, so its folders, CI, and `CLAUDE.md` are fine and only the shipped docs were left describing a different repository. Offer to run **Phase 4 alone**. It needs no interview and no plan gate — read the repo to answer what the interview would have asked, then go. Skip Phases 1, 2, 3, 5, and 6 entirely; do not re-scaffold a working project. Phase 3 is also where `docs/template/` is deleted and `SNAPSHOT_PATH` is reset, so this path never touches a project's own session history in `docs/session-history/`.
 - **Already initialized, sweep clean** → there is nothing here to do. Say so and stop. Ongoing drift is the template-sync workflow's job, not this skill's.
 
 Only if the user asks for a genuine re-run of the whole thing — rare, and usually a sign the project changed shape enough to warrant restarting — confirm that is what they mean before continuing to Phase 1.
@@ -82,7 +82,7 @@ Work out, from the answers:
 - For each folder: a short structure sketch and what its README should say, written for the actual chosen stack, not generic boilerplate. Model the tone and depth on the existing `docs/*/README.md` files already in this repo — What belongs here, What doesn't, conventions — but for code folders instead of docs folders.
 - Root-level tooling to add: a manifest file appropriate to the language (`pyproject.toml`, `package.json`, `go.mod`, and so on), a CI workflow (`.github/workflows/ci.yml`) that runs the chosen lint and test commands, a `.env.example` if the stack has configurable env vars, and a `dependabot.yml` block per package ecosystem introduced. Append to the existing GitHub Actions block — do not replace it.
 - `.github/workflows/skills-ci.yml` and `requirements-dev.txt` already exist and are not the project's CI or its dependencies. They lint and test the scripts under `.claude/skills/`, which this project keeps, so both stay valid here and should be left alone — write the project's own checks as a separate `ci.yml` and its own dependencies into the language manifest. Only if the project strips `.claude/skills/` entirely do these two go with it. If the project also picks Python, keep its runtime dependencies in the manifest rather than merging them into `requirements-dev.txt`: that file is pinned to hold CI's linter ruleset steady, which is a different job from resolving an application's dependency tree.
-- Which values in `CLAUDE.md`'s `## Session Config` table need real settings now — `TEST_COMMAND`, `LINT_COMMAND`, and `SRC_ROOT`. Some, like `DOCS_ROOT` and `ADR_PATH`, are already correct as shipped. This one table is what every command in `.claude/commands/` reads, so it is the only place these values are set.
+- Which values in `CLAUDE.md`'s `## Session Config` table need real settings now — `TEST_COMMAND`, `LINT_COMMAND`, and `SRC_ROOT`. Some, like `DOCS_ROOT` and `ADR_PATH`, are already correct as shipped. `SNAPSHOT_PATH` is not: the template points it at `docs/template/`, its own records folder, which Phase 3 deletes, so it must be reset to `docs/session-history/`. This one table is what every command in `.claude/commands/` reads, so it is the only place these values are set.
 - Which inherited docs Phase 4 will rewrite, as a plain file list. Read that phase now so the plan you present covers them — the user should approve the docs pass, not discover it. One of those calls needs an answer now: whether this project exposes an API (decides whether `docs/api/` is filled in or deleted).
 - Which stack or architecture decisions from this interview become ADR files. Every one does — list their working titles now, so the user sees the `docs/ADRs/*.md` files by name before Phase 4 writes them, rather than discovering the folder filled in afterward.
 
@@ -97,13 +97,14 @@ Once the user approves the plan:
 
 1. Create each approved folder with its README. Match the depth and tone of this repo's existing docs READMEs.
 1. Write the root tooling files from Phase 2.
-1. Fill in `CLAUDE.md`'s `## Session Config` table with the real values now known, replacing every `{set by init-project ...}` placeholder.
+1. Fill in `CLAUDE.md`'s `## Session Config` table with the real values now known, replacing every `{set by init-project ...}` placeholder. Also set `SNAPSHOT_PATH` to `docs/session-history/`: the template ships it pointing at `docs/template/`, which is deleted below, and a project's `/session-end` should write to its own folder.
 1. Update the root `README.md`: fill in `## Stack`, `## Quick Start`, and `## Project Structure` with the real content. Delete the `## Getting started` section — its job, pointing here, is done.
 1. Leave `.template-version` in place, unedited. It records which version of the template this project was scaffolded from, and the `sync-from-template` workflow reads it later to report how far behind the project has fallen and which changelog entries it missed. Deleting it as template residue costs that project its only provenance marker; it is the one inherited file that is *about* the relationship to the template and is meant to stay.
-1. Delete the three files that belong to the template rather than to this project:
+1. Delete the three files and one folder that belong to the template rather than to this project:
    - `CHANGELOG.md` — a log of template releases. If the project wants a changelog, it starts empty at its own 0.1.0.
    - `.github/workflows/template-ci.yml` — its first step asserts that `check_scaffolded_project.sh` *fails* on this repo, which stops being true the moment you finish. Leaving it turns the project's CI red.
    - `scripts/simulate_init.sh` — it builds an as-if-initialized fixture from the template, and has nothing to simulate once the real thing exists.
+   - `docs/template/` — the template's own session snapshots and reviews. Delete the whole folder rather than a list of files: the template adds a snapshot every session, so no list of names could stay current. This is safe only because this is a first scaffold, where every file in it is the template's. Never delete `docs/session-history/` snapshots: once the project exists, those are its own.
 
    Keep `.github/workflows/skills-ci.yml` and `scripts/check_scaffolded_project.sh`: the first tests the skills this project keeps, and the second is how anyone later confirms the project still looks properly scaffolded.
 1. Work out and present the cloud environment recommendation below, using the install and test commands just written into the manifest and CI workflow.
@@ -183,7 +184,7 @@ bash scripts/check_doc_claims.sh          # ecosystems, manifests and commands t
 bash scripts/check_scaffolded_project.sh  # every post-condition these phases promise
 ```
 
-`check_scaffolded_project.sh` is the contract for this whole skill: placeholders gone, `docs/foundation.md` written, the ADR files indexed and linked, no template-only file left behind. Expect it to fail until Phases 5 and 6 are done — it is the Phase 7 gate, not a Phase 4 one. Run it here anyway to see what remains.
+`check_scaffolded_project.sh` is the contract for this whole skill: placeholders gone, `docs/foundation.md` written, the ADR files indexed and linked, no template-only file or folder left behind (`CHANGELOG.md`, `docs/template/`, a `SNAPSHOT_PATH` still pointing there). Expect it to fail until Phases 5 and 6 are done — it is the Phase 7 gate, not a Phase 4 one. Run it here anyway to see what remains.
 
 It checks three things: language still describing this repo as a template, links resolving to paths that do not exist, and references to `.prompt.md` files, which no longer exist anywhere in this layout.
 
