@@ -138,6 +138,32 @@ printf '# acme\n\n## Getting started\n\nRun init-project.\n\n## Stack\n\n- x\n\n
   > "$d/README.md"
 assert_hit "catches the one-time Getting started section" "$d" GETTING_STARTED
 
+# The template keeps its own session snapshots and reviews in docs/template/, and
+# init-project deletes that whole folder. A folder, not a list of file names: the
+# template adds a snapshot every session, so no list could stay current.
+d="$(fixture)"; mkdir -p "$d/docs/template"
+printf '# Session\n' > "$d/docs/template/SESSION_SNAPSHOT_2026-09-27.md"
+assert_hit "catches the template's own records folder carried over" "$d" TEMPLATE_RESIDUE
+
+# init-project must also point SNAPSHOT_PATH back at the project's own folder.
+# The value can be spelled several ways, so each has to be caught.
+for spelling in 'docs/template/' 'docs/template' './docs/template/' 'docs/template/session-history/'; do
+  d="$(fixture)"
+  printf '# CLAUDE.md\n\n## Project identity\n\nacme.\n\n## Session Config\n\n| Value | Setting |\n|---|---|\n| `SNAPSHOT_PATH` | %s |\n' "$spelling" \
+    > "$d/CLAUDE.md"
+  assert_hit "catches SNAPSHOT_PATH still pointing at the template's records ($spelling)" "$d" TEMPLATE_RESIDUE
+done
+
+# The guard against over-reach. A project writes its OWN snapshots into
+# docs/session-history/ with /session-end, so the check must never read a
+# snapshot file there as residue.
+d="$(fixture)"; mkdir -p "$d/docs/session-history"
+printf '# Session history\n' > "$d/docs/session-history/README.md"
+printf '## Session Goals\n\nShip the first release.\n' > "$d/docs/session-history/SESSION_SNAPSHOT_2026-10-05.md"
+printf '# CLAUDE.md\n\n## Project identity\n\nacme.\n\n## Session Config\n\n| Value | Setting |\n|---|---|\n| `SNAPSHOT_PATH` | docs/session-history/ |\n' \
+  > "$d/CLAUDE.md"
+assert_clean "accepts a project's own session snapshots in docs/session-history/" "$d"
+
 # ------------------------------------------------------------------------ ADRs
 
 d="$(fixture)"; printf '# ADR-001 — Thing\n' > "$d/docs/ADRs/ADR-001-thing.md"

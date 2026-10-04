@@ -8,8 +8,8 @@
 #
 # This is a fixture builder, not a reimplementation of the skill. It performs
 # the mechanical edits the phases specify — filling placeholders, writing the
-# founding brief, seeding an ADR, removing the template's own changelog — and
-# deliberately nothing that needs judgement. If the two disagree, the skill is
+# founding brief, seeding an ADR, removing the template's own changelog and
+# session records — and deliberately nothing that needs judgement. If the two disagree, the skill is
 # the source of truth and this script is what needs updating.
 #
 # Keeping it honest: the value here is that the verifier is a real, shippable
@@ -94,6 +94,7 @@ sed -i \
   -e "s|{set by init-project — e.g. \"pytest tests/ -v\" or \"npm test\"}|$TEST_COMMAND|" \
   -e "s|{set by init-project — e.g. \"ruff check .\" or \"npm run lint\"}|$LINT_COMMAND|" \
   -e "s|{set by init-project — the main source folder}|$SRC_ROOT|" \
+  -e "s#\`SNAPSHOT_PATH\` | docs/template/ |#\`SNAPSHOT_PATH\` | docs/session-history/ |#" \
   CLAUDE.md
 
 # --- Phase 3: the root README --------------------------------------------
@@ -140,6 +141,11 @@ esac
 rm -f CHANGELOG.md
 rm -f .github/workflows/template-ci.yml
 rm -f scripts/simulate_init.sh
+
+# docs/template/ holds the template's own session snapshots and reviews: its
+# history, not the project's. A project's /session-end writes to
+# docs/session-history/ instead, which the SNAPSHOT_PATH reset above points at.
+rm -rf docs/template
 
 # --- Phase 4: seed a real ADR and index it --------------------------------
 ADR_FILE="ADR-001-$(tr '[:upper:] ' '[:lower:]-' <<<"$ADR_TITLE" | tr -cd '[:alnum:]-').md"

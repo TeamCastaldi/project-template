@@ -117,6 +117,27 @@ node_modules_fixture() {
 assert_no_hit "skips template language inside node_modules" "$(node_modules_fixture)" TEMPLATE_LANGUAGE
 assert_no_hit "skips broken links inside node_modules" "$(node_modules_fixture)" BROKEN_LINK
 
+# The template's own session snapshots and reviews live in docs/template/, which
+# init-project deletes. They are meant to talk about the template, so the sweep
+# skips them the way it skips a skill. A copy that leaks into a project is still
+# caught: check_scaffolded_project.sh flags the folder's existence.
+template_records_fixture() {
+  local d
+  d="$(fixture)"; mkdir -p "$d/docs/template"
+  echo "This template needs a review. See [plan](missing-plan.md)." > "$d/docs/template/review.md"
+  echo "# A project" > "$d/README.md"
+  printf '%s' "$d"
+}
+assert_no_hit "skips template language inside docs/template" "$(template_records_fixture)" TEMPLATE_LANGUAGE
+assert_no_hit "skips broken links inside docs/template" "$(template_records_fixture)" BROKEN_LINK
+
+# The guard against pruning too much: the rest of docs/ is still swept.
+d="$(fixture)"; mkdir -p "$d/docs/template" "$d/docs/specs"
+echo "This template needs a review." > "$d/docs/template/review.md"
+echo "Specs for this template." > "$d/docs/specs/overview.md"
+echo "# A project" > "$d/README.md"
+assert_hit "still sweeps the rest of docs/ beside docs/template" "$d" TEMPLATE_LANGUAGE "docs/specs/overview.md:1"
+
 # ----------------------------------------------------------------- broken links
 
 d="$(fixture)"; echo "See [the guide](docs/nope.md)." > "$d/README.md"

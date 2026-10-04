@@ -63,6 +63,10 @@ The single source of truth for values the commands in .claude/commands/ and the
 skills in .claude/skills/ need. They are read from here rather than repeated per
 file, so a changed test command is a one-line edit.
 init-project fills these in; until then they are placeholders.
+
+SNAPSHOT_PATH is the exception: here it points at docs/template/, because the
+template's own session snapshots are not a project's history. init-project
+deletes that folder and resets this value to docs/session-history/.
 -->
 
 | Value | Setting |
@@ -72,7 +76,7 @@ init-project fills these in; until then they are placeholders.
 | `SRC_ROOT` | {set by init-project — the main source folder} |
 | `DOCS_ROOT` | docs/ |
 | `ADR_PATH` | docs/ADRs/ |
-| `SNAPSHOT_PATH` | docs/session-history/ |
+| `SNAPSHOT_PATH` | docs/template/ |
 | `ROADMAP_PATH` | docs/plans/ROADMAP.md |
 
 ## Code style
