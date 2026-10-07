@@ -93,12 +93,12 @@ Stop here in that case. Do not proceed to later phases.
 
 ## Phase 2: Categorize each PR by SemVer risk
 
-Pipe the JSON from Phase 1 into the bundled script:
+Pipe the JSON from Phase 1 into the bundled script, from the repo root:
 
 ```bash
 gh pr list --author "app/dependabot" --state open \
   --json number,title,url,headRefName --limit 100 \
-  | python3 scripts/categorize_prs.py
+  | python3 .claude/skills/dependabot/scripts/categorize_prs.py
 ```
 
 Use the script rather than eyeballing version numbers or titles by hand.
@@ -379,7 +379,7 @@ state what happened, not what might have happened.
 
 ## Bundled script
 
-`scripts/categorize_prs.py` - reads a JSON array of PRs from stdin
+`.claude/skills/dependabot/scripts/categorize_prs.py` - reads a JSON array of PRs from stdin
 (the shape `gh pr list --json number,title,url,headRefName` produces)
 and prints the same array back with `package`, `old_version`,
 `new_version`, `category`, and `reason` added to each entry. Pure

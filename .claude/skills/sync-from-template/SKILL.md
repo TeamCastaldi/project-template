@@ -72,20 +72,18 @@ URL; stop and ask.
 
 ### 1. Fetch and compare
 
-Run [`scripts/compare_template.sh`](scripts/compare_template.sh) with the
-values from the config file:
+Run [`scripts/compare_template.sh`](scripts/compare_template.sh) from the
+repo root, with the values from the config file:
 
 ```bash
-scripts/compare_template.sh "$TEMPLATE_REPO_URL" "$TEMPLATE_REF" "$PROJECT_ROOT" "${SYNC_PATHS[@]}"
+bash .claude/skills/sync-from-template/scripts/compare_template.sh "$TEMPLATE_REPO_URL" "$TEMPLATE_REF" "$PROJECT_ROOT" "${SYNC_PATHS[@]}"
 ```
 
 This does an ephemeral sparse clone of the template (shallow, blob-filtered,
 scoped to `sync_paths` only) into a temp directory, then reports how every
 file under those paths compares to the local repo. It never touches the local
-repo itself -- it only reads and reports. Read
-[`scripts/compare_template.sh`](scripts/compare_template.sh) itself if you
-need to understand exactly what it does before running it; it is short and
-worth reading rather than trusting blindly.
+repo itself -- it only reads and reports. The output it prints is described
+below; read the script itself only if what it prints does not match that.
 
 The script's output gives you four buckets per file: `NEW`, `CHANGED`, `SAME`,
 `LOCAL_ONLY`. It also prints `TEMP_CLONE=<path>` (where the fetched template
