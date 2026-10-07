@@ -33,20 +33,11 @@ than new files — deleting something, or editing a file the normal sync
 doesn't touch — and those get proposed as their own batch, held for their
 own confirmation, same as everything else here.
 
-## When to use this
+## Not to be confused with `/sync-template`
 
-Run it when the user:
-
-- Asks to sync, pull, or update commands, skills, or tooling from the template
-- Says the template has picked up new commands, skills, or `CLAUDE.md` changes
-- Wants to check whether this repo is behind `project-template`
-- Types `/sync-from-template`
-
-Do not confuse this with the `/sync-template` command. That command audits a
-repo's own internal consistency — folders vs. READMEs, documented commands vs.
-reality — without reaching outside it. This skill reaches from a *downstream*
-project repo back to the template and pulls a folder in. Different direction,
-different job.
+That command audits a repo's own internal consistency without reaching outside
+it; this skill reaches from a downstream project back to the template and pulls
+files in.
 
 ## One-time setup: the config file
 
@@ -64,12 +55,6 @@ template_ref: main
 sync_paths:
   - .claude
 ```
-
-> [!NOTE]
-> This repo does not currently record its template origin anywhere else (e.g.
-> in `CLAUDE.md`). If `init-project` starts doing that later, read that value
-> first and treat this file as the fallback -- don't ask the user to duplicate
-> the same URL in two places once there's a single source of truth for it.
 
 Proposing the default above on first run is fine -- it's a known, confirmed
 value, not a guess. If the user ever points this skill at a different template
@@ -132,14 +117,6 @@ statement of how far behind this project is:
   of this sync, so the next run can report a real gap.
 - **`TEMPLATE_VERSION=unknown`** -- the pinned ref predates versioning. Fall back
   to the SHA and say that is what you are comparing against.
-
-We use an ephemeral clone rather than a persistent `template` git remote on
-purpose: the only thing that needs to know where the template lives is the
-config file above. If the template ever moves, the user changes one YAML value
-and every future sync just picks it up, instead of having to also update a
-remote URL that isn't tracked anywhere. This does mean a fresh clone on every
-run instead of an incremental fetch -- if that ever becomes slow enough to be
-annoying, a persistent remote is the fallback; revisit then.
 
 ### 2. Report
 
