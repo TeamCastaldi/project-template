@@ -39,6 +39,11 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
+# skill-creator writes each evaluation run to <skill>-workspace/ beside the
+# skill. Run output, not source — and validate_skills.sh would read the folder
+# as a skill missing its SKILL.md.
+.claude/skills/*-workspace/
+
 # -------------------------------------------------------
 # Stack-specific ignores (Python .venv, node_modules/dist, *.db, etc.)
 # — /init-project appends the right block(s) once the stack is chosen.

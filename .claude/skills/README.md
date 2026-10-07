@@ -41,3 +41,32 @@ bash scripts/validate_skills.sh
 ## Testing a skill's scripts
 
 A skill that ships executable scripts ships tests for them, colocated in the same `scripts/` directory as `test_*.sh` or `test_*.py`. CI runs them on every push. See `.github/workflows/skills-ci.yml`.
+
+## Evaluations
+
+Script tests prove a skill's scripts work. They cannot tell you whether Claude picks the skill for the right request, or follows it once it has. Each skill has three evaluations for that, in `evals/evals.json`, in the [skill-creator](https://agentskills.io/skill-creation/evaluating-skills) format:
+
+1. a request the skill should trigger on
+2. a near-miss it should not trigger on, usually a request that belongs to a neighbouring command or skill
+3. a behaviour the skill must get right once it runs
+
+They need a model, so CI does not run them. Run them by hand after changing a skill's description or instructions:
+
+1. Install the plugin once: `/plugin install skill-creator@claude-plugins-official`.
+2. In a fresh session, in the setup below, ask: `evaluate the <name> skill with skill-creator`. A fresh session matters: context left over from editing the skill hides gaps in what it actually says.
+3. Repeat for each model family you expect the skill to run on (`/model`).
+
+skill-creator's documented layout puts run output in a `<name>-workspace/` folder beside the skill. That path is gitignored. Delete the folder when you are done, because `validate_skills.sh` reads any folder here as a skill.
+
+| Skill | Cases | Run them in |
+|---|---|---|
+| `dependabot` | 1 | A repo with `gh` authenticated. An empty Dependabot queue is fine; the skill should still preflight first. |
+| `dependabot` | 2 | A repo that has `requirements-dev.txt`. |
+| `dependabot` | 3 | Any repo, after creating an uncommitted file, for example `echo note > scratch.md`. |
+| `docs-updater` | 1–3 | An initialized project. In this template, build one with `bash scripts/simulate_init.sh python-cli <dir>`. |
+| `init-project` | 1, 3 | A fresh clone of the template. They do not apply in a project. |
+| `init-project` | 2 | An initialized project. |
+| `sync-from-template` | 1 | An initialized project with one line of `.claude/commands/commit-msg.md` edited, so the report has a change to show. It needs network access to the template repo. |
+| `sync-from-template` | 2 | An initialized project. |
+| `sync-from-template` | 3 | An initialized project with an extra `.claude/commands/local-note.md`. |
+| `testing-standards` | 1–3 | Any repo. The prompts carry their own code. |
