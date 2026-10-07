@@ -1,6 +1,16 @@
 ---
 name: init-project
-description: Runs the one-time setup interview and scaffolding for a project freshly cloned from the stack-agnostic project template, before any app code, stack choice, or folders exist. Use whenever the user has just cloned this template and wants to get started — even if they only say "help me set this up" or "this is a fresh clone, get it going." Also use if CLAUDE.md's Project identity section still shows the placeholder comment, or docs/foundation.md doesn't exist. Interviews the user on identity, shape, stack, and constraints one question at a time, proposes a folder/tooling scaffolding plan for approval, then creates the folders, writes root tooling files, re-points the docs the template ships (CONTRIBUTING.md, SECURITY.md, and the rest) away from describing the template and at the real project, fills in CLAUDE.md, and writes docs/foundation.md. Also use on an already-initialized project when its CONTRIBUTING.md, SECURITY.md, or folder READMEs still describe "this template" rather than the project — that repo was scaffolded before this skill re-pointed inherited docs, and Phase 4 retrofits it on its own without the interview. Otherwise strictly one-time — do not use for everyday coding-session startup, or to sync an existing project with template updates; those are separate, ongoing concerns.
+description: >-
+  Runs the one-time setup for a project freshly cloned from this stack-agnostic template:
+  interviews the user one question at a time on identity, shape, stack and constraints,
+  proposes a scaffolding plan for approval, then creates folders and root tooling, re-points
+  the inherited docs (CONTRIBUTING.md, SECURITY.md and the rest) at the real project, and
+  fills in CLAUDE.md and docs/foundation.md. Use when the user has just cloned the template
+  and wants to get started, even if they only say "help me set this up"; when CLAUDE.md's
+  Project identity is still a placeholder or docs/foundation.md is missing; or when an
+  already-initialized project's CONTRIBUTING.md, SECURITY.md or folder READMEs still
+  describe "this template". Not for everyday session startup or for pulling later template
+  updates.
 ---
 
 # Init project
