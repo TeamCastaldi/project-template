@@ -35,6 +35,13 @@ Work from whatever evidence is available, in order of preference:
    - If a commit's subject hints at something removed, replaced, or deprecated, run
      `git show <hash>` on it to see the actual diff before writing the update.
 
+The user's own description of a change counts as evidence that it happened: "I added an
+`export` subcommand" is enough to document one. It is not evidence for the details it
+leaves out. Take those from the code and git history, and never invent one that neither
+gives. If a detail a reader would act on is still missing, such as a command's syntax, ask
+for it rather than write a guess or a placeholder into the doc. A decision's reason that
+nobody gave is marked as not recorded, not reconstructed.
+
 If neither source shows a clear, specific change, don't guess at what to document - use the
 exact wording in Edge cases below instead of inventing plausible-sounding updates.
 
