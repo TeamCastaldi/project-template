@@ -15,7 +15,7 @@
     {
       "id": 2,
       "prompt": "We're done for today. Write the session snapshot and wrap up.",
-      "expected_output": "This is the /session-end workflow (a dated snapshot), not a living-docs update, so the docs-updater skill is not used. Claude points the user at /session-end or follows it.",
+      "expected_output": "This is the /session-end workflow (a dated snapshot), not a living-docs update, so the docs-updater skill is not used. Claude points the user at /session-end, which only the user can start.",
       "assertions": [
         "The docs-updater skill is not invoked",
         "README.md and CLAUDE.md are not rewritten"

@@ -37,11 +37,14 @@ Everything here automates work. They differ in **who decides it runs**, and choo
 
 | | Hook | Skill | Command |
 |---|---|---|---|
-| Decided by | The harness, on an event | Claude, on recognizing the situation | You, by typing `/name` |
+| Decided by | The harness, on an event | Claude, on recognizing the situation — or you, by typing `/name` | You, by typing `/name` — Claude cannot start it |
+| Set by | Its wiring in `settings.json` | The default for anything in `skills/` | `disable-model-invocation: true` in its frontmatter |
 | What it is | A shell script | Instructions Claude reads | Instructions Claude reads |
 | Judgment | None — identical every run | Judges *when* | You pick when, Claude works out how |
 | Can be declined | No | Yes | Yes |
 | Can block an action | Yes | No | No |
+
+Two frontmatter fields set who may start a skill or command. `disable-model-invocation: true` means only you can: Claude cannot start it on its own, and its description stays out of every session's context until you do. `user-invocable: false` is the reverse, for background knowledge that is never an action of its own; nothing here uses it yet.
 
 **A command is a request. A hook is a guarantee.** Reach for a hook only when something must happen whether or not anyone remembers to ask *and* must not depend on judgment. Everything else is a skill or a command.
 
@@ -66,7 +69,7 @@ The test that settles most cases: *if the user never learned this existed, shoul
 
 ### Signs you chose wrong
 
-- **A skill with a mode table.** If a skill routes `/this` and `/that` to different sections, it is several commands wearing one skill's clothing. Split it. The dispatcher exists only because skills cannot be invoked by name.
+- **A skill with a mode table.** If a skill routes `/this` and `/that` to different sections, it is several commands wearing one skill's clothing. Split it: any skill or command can be invoked by `/name`, so the dispatcher buys nothing.
 - **A skill that duplicates one from a marketplace.** Two descriptions competing for the same phrases resolve unpredictably. If the workflow has a moment you choose, a command sidesteps the collision entirely, because explicit invocation never competes.
 - **A command nobody remembers to run.** If work keeps getting missed because a command went untyped, the moment is recognizable rather than chosen — it wanted to be a skill.
 
@@ -90,7 +93,7 @@ A doc that was false from the first commit falls through both of the ongoing che
 
 ## Layout requirements
 
-- A **command** is `commands/<name>.md`, invoked as `/<name>`, with YAML frontmatter carrying at least a `description`.
+- A **command** is `commands/<name>.md`, invoked as `/<name>`, with YAML frontmatter carrying a `description` and `disable-model-invocation: true`. The one exception is a command another workflow has Claude run: `/commit-msg`, which `/session-end` uses to draft its message.
 - A **skill** is `skills/<name>/SKILL.md` — the filename is exact, and `scripts/validate_skills.sh` enforces the rest.
 - A **hook** is `hooks/<event>-hook.sh`, wired to its event in `settings.json`.
 

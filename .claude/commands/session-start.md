@@ -1,5 +1,6 @@
 ---
 description: Open a coding session — scan repo state and recent history, pick a mission, then work it one verified step at a time.
+disable-model-invocation: true
 argument-hint: "[optional: what you want to work on]"
 ---
 
@@ -67,7 +68,7 @@ Once a mission is selected:
 
 ## Close
 
-When the plan is complete or the user stops early, summarize what was achieved and offer to run `/session-end`.
+When the plan is complete or the user stops early, summarize what was achieved and suggest typing `/session-end` to close out.
 
 ## Conventions
 
