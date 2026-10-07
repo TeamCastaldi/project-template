@@ -78,6 +78,16 @@ Beyond picking the right mechanism, both share the bar in [`skills/README.md`](s
 
 Commands and skills that need project-specific values — test command, source root, where snapshots go — read them from the `## Session Config` section of the root `CLAUDE.md`. They are not repeated per file. That section is the single source of truth; `init-project` fills it in during scaffolding.
 
+## Which workflow keeps which docs true
+
+Three workflows touch documentation, and the boundaries are worth keeping clean:
+
+- **`init-project`, once, at birth.** Inherited docs were never true of this project. They were wrong at clone time, and no later workflow is designed to notice, because nothing *changed* to draw attention to them — an audit for drift compares docs against the work done since, and finds nothing to compare here.
+- **`/sync-template`, ongoing.** Structural drift as folders, commands, and tooling move around after init.
+- **`docs-updater`, per session.** Doc claims that stopped being true because of work just completed.
+
+A doc that was false from the first commit falls through both of the ongoing checks. That is why `init-project` owns the first docs pass.
+
 ## Layout requirements
 
 - A **command** is `commands/<name>.md`, invoked as `/<name>`, with YAML frontmatter carrying at least a `description`.
