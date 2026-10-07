@@ -5,10 +5,10 @@ description: >
   completed in a coding session - new features, architectural decisions, changed
   dependencies, revised setup steps. Distinct from /session-end's
   SESSION_SNAPSHOT files, which are a dated log; this skill edits the docs a new
-  contributor would actually read today. Use whenever Nathan says things like "update the
+  contributor would actually read today. Use whenever the user says things like "update the
   docs", "update the README", "sync CLAUDE.md", "the docs are stale", "make sure the
   readme reflects this", or asks to bring project documentation up to date after finishing
-  work - even if he names no specific file.
+  work - even if they name no specific file.
 ---
 
 # Session docs updater
@@ -72,7 +72,7 @@ the first time.
 - Only document work that the session context or git history actually evidences - never
   document a "likely" next step or something implied but not confirmed.
 - Preserve each file's existing structure and heading style rather than reorganizing it,
-  unless Nathan asks for that separately.
+  unless the user asks for that separately.
 
 ## Edge cases
 
