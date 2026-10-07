@@ -40,7 +40,8 @@ CI must be green. The template ships no app code, but it does ship the scripts i
 
 ```bash
 python3 -m pip install -r requirements-dev.txt   # pinned — same versions CI uses
-bash scripts/validate_skills.sh                  # skill layout and frontmatter
+bash scripts/validate_skills.sh                  # skill layout, frontmatter and size limits
+bash scripts/test_validate_skills.sh
 bash scripts/check_doc_claims.sh                 # docs vs. what the repo contains
 bash scripts/test_check_doc_claims.sh
 bash scripts/test_check_scaffolded_project.sh

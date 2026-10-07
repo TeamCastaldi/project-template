@@ -20,3 +20,4 @@ scripts/test_check_doc_claims.sh
 scripts/check_scaffolded_project.sh
 scripts/test_check_scaffolded_project.sh
 scripts/validate_skills.sh
+scripts/test_validate_skills.sh
