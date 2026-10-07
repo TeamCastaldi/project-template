@@ -1,6 +1,6 @@
 # Skill authoring best practices review: what Anthropic's guide means for this template
 
-Status: **adopted, pending merge.** Every change below is implemented in the stacked pull requests #29 to #37 and the close-out that follows them, tracked in [`skill-best-practices-plan.md`](skill-best-practices-plan.md). S6's evaluations are written but not yet run. Written 2026-10-07 against this repo at `main` (46137e4) and Anthropic's [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) (called "the guide" below), fetched the same day as raw markdown.
+Status: **adopted.** Every change below is merged into `main` through pull requests #29 to #38, tracked in [`skill-best-practices-plan.md`](skill-best-practices-plan.md). Of S6's evaluations, only `docs-updater`'s have been run, once, as a spot check recorded in [`skill-eval-baseline.md`](skill-eval-baseline.md). Written 2026-10-07 against this repo at `main` (46137e4) and Anthropic's [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) (called "the guide" below), fetched the same day as raw markdown.
 
 Citations: our files as `path:line`. Line numbers will drift as files change. Claude Code–specific behaviour is cited from the [Claude Code skills page](https://code.claude.com/docs/en/skills), fetched the same day, and labelled as such wherever it differs from the guide.
 

@@ -65,8 +65,25 @@ Script tests prove a skill's scripts work. They cannot tell you whether Claude p
 They need a model, so CI does not run them. Run them by hand after changing a skill's description or instructions:
 
 1. Install the plugin once: `/plugin install skill-creator@claude-plugins-official`.
-2. In a fresh session, in the setup below, ask: `evaluate the <name> skill with skill-creator`. A fresh session matters: context left over from editing the skill hides gaps in what it actually says.
-3. Repeat for each model family you expect the skill to run on (`/model`).
+2. Set up the project the cases need (the table below), and start Claude Code in that project's directory, so the runs see its skills and settings rather than the template's.
+3. In that fresh session, ask: `evaluate the <name> skill with skill-creator`. A fresh session matters: context left over from editing the skill hides gaps in what it actually says.
+4. Repeat for each model family you expect the skill to run on (`/model`).
+
+Most cases need an initialized project. Build one from the template's root, and commit it, because skills that read `git log` and `git diff` need a real history:
+
+```bash
+bash scripts/simulate_init.sh python-cli /tmp/eval-project
+cd /tmp/eval-project
+git init -q && git add -A && git commit -qm "Initial scaffold"
+```
+
+For the runs without the skill, turn it off; don't let skill-creator delete its files. In a project committed to git, a deleted file is still in the history, where a run can find it and read it. Put this in the project's `.claude/settings.local.json`, which is gitignored, and start a new session:
+
+```json
+{ "skillOverrides": { "<name>": "off" } }
+```
+
+Then remove the entry and start another session for the runs with the skill. Between the two, check `git status` and undo anything a run wrote, so it is not there for the next; leave what the table's setup asks for. The override takes the skill out of Claude's listing, which is what the comparison measures. Its files stay on disk, so a run that reads them anyway does not count as a run without the skill.
 
 skill-creator's documented layout puts run output in a `<name>-workspace/` folder beside the skill. That path is gitignored. Delete the folder when you are done, because `validate_skills.sh` reads any folder here as a skill.
 
@@ -75,7 +92,7 @@ skill-creator's documented layout puts run output in a `<name>-workspace/` folde
 | `dependabot` | 1 | A repo with `gh` authenticated. An empty Dependabot queue is fine; the skill should still preflight first. |
 | `dependabot` | 2 | A repo that has `requirements-dev.txt`. |
 | `dependabot` | 3 | Any repo, after creating an uncommitted file, for example `echo note > scratch.md`. |
-| `docs-updater` | 1–3 | An initialized project. In this template, build one with `bash scripts/simulate_init.sh python-cli <dir>`. |
+| `docs-updater` | 1–3 | The `python-cli` project above, with the `export` command from case 1's fixture committed: in the project, run `git am .claude/skills/docs-updater/evals/files/export-command.patch`. Cases 2 and 3 don't use it, and it doesn't affect them. |
 | `init-project` | 1, 3 | A fresh clone of the template. They do not apply in a project. |
 | `init-project` | 2 | An initialized project. |
 | `sync-from-template` | 1 | An initialized project with one line of `.claude/commands/commit-msg.md` edited, so the report has a change to show. It needs network access to the template repo. |
