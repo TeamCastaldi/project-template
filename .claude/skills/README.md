@@ -38,6 +38,18 @@ Claude Code discovers a skill by looking for `SKILL.md` inside a directory under
 bash scripts/validate_skills.sh
 ```
 
+## Writing a skill
+
+Anthropic's [skill authoring guide](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) is the reference. The rules this repo holds its own skills to:
+
+- **Stay inside the limits.** A `name` of 1–64 lowercase letters, digits and hyphens, without "anthropic" or "claude"; a `description` of at most 1,024 characters with no XML tags; a body of at most 500 lines. `validate_skills.sh` fails on each. Claude Code itself tolerates more, but claude.ai uploads and the Skills API do not.
+- **The description says what and when.** Write it in the third person, with the trigger phrases a user would actually type. Claude reads only the description when choosing a skill, so "when to use this" belongs there, not in the body. `init-project`'s is the model.
+- **The body holds what Claude needs to act.** Reasoning written for maintainers goes in a README; see "Which workflow keeps which docs true" in [`../README.md`](../README.md).
+- **Put what must not be lost at the top.** After compaction, Claude Code keeps only the start of an invoked skill, roughly 20,000 characters, and `validate_skills.sh` warns past that. Give a long workflow a progress checklist to copy, as `init-project` and `dependabot` do.
+- **Move detail into files the skill links, one level deep.** `SKILL.md` links each one and says when to read it; a linked file links nothing further. Give a file over 100 lines a table of contents. See `init-project/references/`.
+- **Name scripts by repo-relative path,** as in `bash .claude/skills/<name>/scripts/<script>.sh`. A bare `scripts/…` resolves to the root `scripts/` folder, and `${CLAUDE_SKILL_DIR}` expands to an absolute path the allow rules in `.claude/settings.json` do not match.
+- **Ship three evaluations** with any new skill, and re-run them after changing one, as described under [Evaluations](#evaluations). Give a code fixture a non-`.py` extension (`stub.py.txt`), because CI runs `pytest` and `ruff` over all of `.claude/skills`.
+
 ## Testing a skill's scripts
 
 A skill that ships executable scripts ships tests for them, colocated in the same `scripts/` directory as `test_*.sh` or `test_*.py`. CI runs them on every push. See `.github/workflows/skills-ci.yml`.
