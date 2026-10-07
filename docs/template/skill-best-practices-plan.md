@@ -1,6 +1,6 @@
 # Plan: adopting the skill best-practices review
 
-Status: **draft, not started.** Written 2026-10-07 from [`skill-best-practices-review.md`](skill-best-practices-review.md) ("the review"). Item IDs (S1–S8, N1–N7, Decisions A and B) are the review's. Blueprint review items are prefixed `K` and its decisions are named in full, because both reviews have a "Decision A".
+Status: **Phase 0 complete (both decisions recorded); Phase 1 not started.** Written 2026-10-07 from [`skill-best-practices-review.md`](skill-best-practices-review.md) ("the review"). Item IDs (S1–S8, N1–N7, Decisions A and B) are the review's. Blueprint review items are prefixed `K` and its decisions are named in full, because both reviews have a "Decision A".
 
 Each phase is one branch and one pull request, named by `CONTRIBUTING.md`'s convention. The phases are ordered by dependency: an earlier phase never waits on a later one. Line numbers cited in the review will drift as phases land, so every phase starts by re-reading the files it changes rather than trusting a citation.
 
@@ -10,7 +10,7 @@ Every concern the review raised, and where it is closed. Tick a row when its pha
 
 | Concern | Review ID | Phase | Done |
 |---|---|---|---|
-| Where evaluations live | Decision B | 0 | [ ] |
+| Where evaluations live | Decision B | 0 | [x] |
 | Whether commands block model invocation | Decision A | 0 (decide), 8 (apply) | [ ] |
 | Script paths fail from the repo root | S2 | 1 | [ ] |
 | `sync-from-template` tells Claude to read its script before running it | S2 | 1 | [ ] |
@@ -93,7 +93,7 @@ The comparison clones the local repo, which is why it runs after committing. Git
 The evaluations come before any text changes, so Phases 3, 5 and 6 can be measured against a baseline. If this phase slips, those phases may land with a manual check in a fresh session for each changed skill, and the evaluations are run against them retroactively.
 
 1. Install the skill-creator plugin in a local Claude Code session. The Claude Code skills page gives the command: `/plugin install skill-creator@claude-plugins-official`.
-2. Write `evals/evals.json` for each skill, at the location Decision B chose, with these three cases. Each case needs a fixture. The behaviour cases are chosen so that none needs a live pull-request queue.
+2. Write `.claude/skills/<name>/evals/evals.json` for each skill (Decision B), with these three cases. Each case needs a fixture, kept beside it in `evals/`. CI runs `pytest` and `ruff` over all of `.claude/skills`, so give code fixtures a non-`.py` extension, such as `stub_only_assertion.py.txt`. Then neither tool collects or lints a deliberately bad example. The behaviour cases are chosen so that none needs a live pull-request queue.
 
    | Skill | Should trigger | Should not trigger (near-miss) | Behaviour |
    |---|---|---|---|
@@ -109,14 +109,16 @@ The evaluations come before any text changes, so Phases 3, 5 and 6 can be measur
 **Verify:**
 
 ```bash
-find .claude/skills -path '*/evals/evals.json' | wc -l   # 5, if Decision B chose in-skill
+find .claude/skills -path '*/evals/evals.json' | wc -l   # 5
+find .claude/skills -path '*/evals/*' -name '*.py'        # nothing
+python3 -m pytest .claude/skills -q --collect-only | tail -1   # same count as before this phase
 ```
 
-Also check that each file parses as JSON with at least three cases, and run the standard gate. `pytest`, `ruff` and `validate_skills.sh` must ignore the new files.
+Also check that each file parses as JSON with at least three cases, and run the standard gate. `ruff` and `validate_skills.sh` must stay clean with the new files present.
 
 **Done when:** 15 cases exist, each with its fixture, and a baseline is recorded for at least one model family. Families not run are listed as gaps.
 
-**Changelog:** `### Added`. Three evaluations per skill, in skill-creator's format, and how to run them.
+**Changelog:** `### Added`. Three evaluations per skill, in skill-creator's format, in each skill's `evals/` folder, and how to run them. Note that synced projects receive them, cost no context unless run, and are re-offered them if deleted.
 
 **Coordination:** blueprint K13 adds two smells to `testing-standards`. If K13 lands after this phase, re-run that skill's baseline before using it to judge Phase 6.
 
@@ -270,7 +272,7 @@ This comes last among the content phases, so it describes what the repo now does
    - must-not-lose instructions, and a progress checklist for long workflows, go near the top
    - reference files sit one level deep, with a table of contents once they pass 100 lines (N4 becomes a rule here)
    - scripts are named by repo-relative path
-   - three evaluations, run in a fresh session before merge
+   - three evaluations in the skill's `evals/` folder, run in a fresh session before merge, with code fixtures named so `pytest` and `ruff` skip them
 2. Say that evaluations are not run in CI, because they need a model, and point to Phase 2's how-to.
 
 **Verify:** each rule matches something enforced or practised: a validator check, an existing skill, or the evaluation files. Run `/sync-template`; it should report no drift.
@@ -329,5 +331,5 @@ This comes last among the content phases, so it describes what the repo now does
 
 | Decision | Answer | Date | Notes |
 |---|---|---|---|
-| B: where evaluations live | | | Recommended: in each skill folder (`evals/evals.json`) |
+| B: where evaluations live | **In each skill folder** (`.claude/skills/<name>/evals/`) | 2026-10-07 | skill-creator's default, and they change in the same PR as the skill. They reach every project at clone and on sync. A project that deletes them is re-offered them on each sync (blueprint D5). Sample files must not be collected by `pytest` or linted by `ruff` (Phase 2). |
 | A: commands set `disable-model-invocation: true` | **Yes** | 2026-10-07 | `/commit-msg` stays model-invocable, as recommended, so `/session-end` Step 3 keeps working. Confirm or overturn that before Phase 8. |
