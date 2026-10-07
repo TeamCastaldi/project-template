@@ -291,7 +291,7 @@ This comes last among the content phases, so it describes what the repo now does
 2. Describe the real axis, who may start it, in the mechanism tables. Name the two frontmatter fields: `disable-model-invocation: true` (only the user) and `user-invocable: false` (only Claude).
 3. Re-read the other passages K1 names (`.claude/README.md`'s tree, `.claude/skills/README.md`'s opening, root `README.md` step 2). Change only what is still false.
 
-**8b, only if Decision A is yes:**
+**8b, applies: Decision A was yes (2026-10-07):**
 
 4. Add `disable-model-invocation: true` to `/audit-tests`, `/branch-workflow`, `/roadmap`, `/session-end`, `/session-start` and `/sync-template`. Leave `/commit-msg` as Decision A recorded.
 5. In `session-start.md`'s Close section, change "offer to run `/session-end`" to telling the user to type `/session-end`.
@@ -303,7 +303,7 @@ This comes last among the content phases, so it describes what the repo now does
 - Typing `/session-end` still works, and its Step 3 still drafts the message through `/commit-msg`.
 - The Skills row in `/context` shrinks by about the size of the six descriptions.
 
-**Done when:** 8a is merged; and either 8b is merged with the checks above passing, or Decision A recorded "no".
+**Done when:** 8a and 8b are merged, with the checks above passing.
 
 **Changelog:**
 
@@ -318,7 +318,7 @@ This comes last among the content phases, so it describes what the repo now does
 
 1. Re-run all 15 evaluations on every model family available, and add the final numbers beside the baseline in `skill-eval-baseline.md`.
 2. Change the review's status line from "proposal only" to "adopted", with links to this plan and the merged pull requests.
-3. Settle the version for the pending release: Minor (2.2.0) if 8b did not happen, Major (3.0.0) if it did. Update `.template-version` when the release is cut, not before.
+3. The pending release is Major (3.0.0), because Decision A was yes and 8b changes who may start a command. Update `.template-version` when the release is cut, not before.
 4. Check the downstream path. Run `compare_template.sh` from a scaffold built by `simulate_init.sh` against this repo's merged branch, and confirm every change arrives as `NEW` or `CHANGED`, with nothing needing a migration step.
 5. Tick every row of the concern tracker, and set this plan's status to "complete".
 6. Write the session snapshot to `docs/template/`.
@@ -330,4 +330,4 @@ This comes last among the content phases, so it describes what the repo now does
 | Decision | Answer | Date | Notes |
 |---|---|---|---|
 | B: where evaluations live | | | Recommended: in each skill folder (`evals/evals.json`) |
-| A: commands set `disable-model-invocation: true` | | | If yes, recommended: leave `/commit-msg` model-invocable |
+| A: commands set `disable-model-invocation: true` | **Yes** | 2026-10-07 | `/commit-msg` stays model-invocable, as recommended, so `/session-end` Step 3 keeps working. Confirm or overturn that before Phase 8. |
