@@ -27,6 +27,8 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
+The next release is **Major (3.0.0)**: six commands no longer start on their own (see the first entry under Changed). The rest, from the skill best-practices review in `docs/template/`, is Minor or Patch. Two edits fall outside what `/sync-from-template` copies, so they are listed under Migration steps at the end of this section.
+
 ### Added
 
 - `/roadmap` — a command to create, evaluate, add to and complete a roadmap. Its guardrail is grounding: every item cites a repo path, an open issue, or an explicit request, and `evaluate` reports stated goals missing from the roadmap without adding them. `add` and `complete` change exactly one line, copy the neighbouring item's format, and show `git diff` as proof. A command rather than a skill because the moment to touch a roadmap is one you choose.
@@ -59,6 +61,11 @@ The first sync after upgrading runs the project's older `compare_template.sh`, w
 - Every project scaffolded from the template inherited the template's own session snapshots, `docs/session-history/SESSION_SNAPSHOT_2026-09-27.md` and `SESSION_SNAPSHOT_2026-09-28.md`. `init-project` removed only the changelog, the template CI workflow and `simulate_init.sh`, and nothing checked. A project initialized from this version no longer gets them. A project initialized earlier can delete those two files if it still has them; any other snapshot in its `docs/session-history/` is its own, so leave it. Nothing breaks if they stay, so this is a note and not a migration step.
 - `dependabot` and `sync-from-template` now name their bundled scripts by repo-relative path (`.claude/skills/<skill>/scripts/…`), the way `init-project` and `/audit-tests` already did. The bare `scripts/categorize_prs.py` and `scripts/compare_template.sh` they gave resolved to the root `scripts/` folder when run from the repo root, so the first call failed (exit 2 and exit 127) until Claude went looking for the file. `sync-from-template` also no longer asks Claude to read its script before running it; the script's output is what the skill needs, and reading it is now only for when that output looks wrong.
 - `.claude/README.md` said a dispatcher skill exists "only because skills cannot be invoked by name". Claude Code merged commands into skills, so any skill or command can be invoked by `/name`. The mechanism table now says who may start each one and which frontmatter field sets it (`disable-model-invocation`, `user-invocable`). This was K1 in `docs/template/blueprint-review.md`.
+
+### Migration steps
+
+- `EDIT .gitignore: ignores .claude/skills/*-workspace/, where skill-creator writes evaluation runs.` Copy the block from the template's own `.gitignore`.
+- `EDIT .github/workflows/skills-ci.yml: has a "Test validate_skills.sh" step running bash scripts/test_validate_skills.sh, after "Validate skill layout".` Copy the step from the template's own `skills-ci.yml`.
 
 ## [2.1.0] - 2026-09-27
 

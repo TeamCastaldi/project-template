@@ -1,31 +1,31 @@
 # Plan: adopting the skill best-practices review
 
-Status: **Phase 0 complete (both decisions recorded); Phase 1 in progress on `fix/skill_script_paths`.** Written 2026-10-07 from [`skill-best-practices-review.md`](skill-best-practices-review.md) ("the review"). Item IDs (S1–S8, N1–N7, Decisions A and B) are the review's. Blueprint review items are prefixed `K` and its decisions are named in full, because both reviews have a "Decision A".
+Status: **all phases implemented as stacked pull requests, awaiting merge in order** (#29, then #30 to #37, then the close-out). The evaluation runs are still outstanding; see Outcome. Written 2026-10-07 from [`skill-best-practices-review.md`](skill-best-practices-review.md) ("the review"). Item IDs (S1–S8, N1–N7, Decisions A and B) are the review's. Blueprint review items are prefixed `K` and its decisions are named in full, because both reviews have a "Decision A".
 
 Each phase is one branch and one pull request, named by `CONTRIBUTING.md`'s convention. The phases are ordered by dependency: an earlier phase never waits on a later one. Line numbers cited in the review will drift as phases land, so every phase starts by re-reading the files it changes rather than trusting a citation.
 
 ## Concern tracker
 
-Every concern the review raised, and where it is closed. Tick a row when its phase merges.
+Every concern the review raised, and where it is closed. Tick a row when its pull request merges.
 
-| Concern | Review ID | Phase | Done |
+| Concern | Review ID | Phase (PR) | Merged |
 |---|---|---|---|
-| Where evaluations live | Decision B | 0 | [x] |
-| Whether commands block model invocation | Decision A | 0 (decide), 8 (apply) | [ ] |
-| Script paths fail from the repo root | S2 | 1 | [ ] |
-| `sync-from-template` tells Claude to read its script before running it | S2 | 1 | [ ] |
-| No evaluations; untested on Haiku, Sonnet and Opus | S6 | 2 | [ ] |
-| Two descriptions over 1,024 characters | S1 | 3 | [ ] |
-| "Nathan" vs "the user" across skills | S4 (terminology) | 3 | [ ] |
-| Validator checks presence only, and has no test | S5 | 4 | [ ] |
-| `init-project` too long to survive compaction | S3 | 5 | [ ] |
-| Stale wording in `init-project` | S3 | 5 | [ ] |
-| Maintainer rationale inside `init-project` | S3 | 5 | [ ] |
-| Body text that only matters before a skill triggers, or only to maintainers | S4 | 6 | [ ] |
-| No progress checklist in `dependabot` | S8 | 6 | [ ] |
-| No authoring rules for new skills | S7 | 7 | [ ] |
-| Stale "skills cannot be invoked by name" text | K1 (blueprint) | 8 | [ ] |
-| Review status, changelog, version and downstream check | — | 9 | [ ] |
+| Where evaluations live | Decision B | 0 (#29) | [x] |
+| Whether commands block model invocation | Decision A | 0 (decide, #29), 8 (apply, #37) | [ ] |
+| Script paths fail from the repo root | S2 | 1 (#30) | [ ] |
+| `sync-from-template` tells Claude to read its script before running it | S2 | 1 (#30) | [ ] |
+| No evaluations; untested on Haiku, Sonnet and Opus | S6 | 2 (#31) | [ ] |
+| Two descriptions over 1,024 characters | S1 | 3 (#32) | [ ] |
+| "Nathan" vs "the user" across skills | S4 (terminology) | 3 (#32) | [ ] |
+| Validator checks presence only, and has no test | S5 | 4 (#33) | [ ] |
+| `init-project` too long to survive compaction | S3 | 5 (#34) | [ ] |
+| Stale wording in `init-project` | S3 | 5 (#34) | [ ] |
+| Maintainer rationale inside `init-project` | S3 | 5 (#34) | [ ] |
+| Body text that only matters before a skill triggers, or only to maintainers | S4 | 6 (#35) | [ ] |
+| No progress checklist in `dependabot` | S8 | 6 (#35) | [ ] |
+| No authoring rules for new skills | S7 | 7 (#36) | [ ] |
+| Stale "skills cannot be invoked by name" text | K1 (blueprint) | 8 (#37) | [ ] |
+| Review status, changelog, version and downstream check | — | 9 (close-out) | [ ] |
 | Gerund renames, third-person rewrites, portable frontmatter, tables of contents, MCP names, wholesale prose cuts, splitting `dependabot` | N1–N7 | No action | — |
 
 N1–N7 are closed by not doing them. The review gives a reason for each. If a later phase makes one apply (N4 becomes a rule once Phase 5 creates reference files), that phase says so.
@@ -326,6 +326,40 @@ This comes last among the content phases, so it describes what the repo now does
 6. Write the session snapshot to `docs/template/`.
 
 **Done when:** every tracker row is ticked, or says "No action", and the downstream comparison shows no surprises.
+
+## Outcome
+
+Recorded at the close-out, 2026-10-07. Every phase is implemented and green in CI; nothing is merged yet.
+
+| Phase | Pull request | Branch |
+|---|---|---|
+| 0 | #29 | `docs/skill_best_practices_review` |
+| 1 | #30 | `fix/skill_script_paths` |
+| 2 | #31 | `test/skill_evals` |
+| 3 | #32 | `docs/skill_descriptions` |
+| 4 | #33 | `feature/validate_skill_limits` |
+| 5 | #34 | `refactor/init_project_disclosure` |
+| 6 | #35 | `refactor/skill_body_trims` |
+| 7 | #36 | `docs/skill_authoring_guide` |
+| 8 | #37 | `docs/command_invocation` |
+| 9 | the close-out | `docs/skill_review_closeout` |
+
+Each pull request targets the previous phase's branch, so each diff shows one phase. Merge them in order; GitHub retargets the next one when a merged base branch is deleted.
+
+Where the work differed from the plan:
+
+- **Phase 2:** no case needed a fixture file. The cases use the template itself, a `simulate_init.sh` scaffold, or prompts that carry their own code.
+- **Phase 2:** no baseline was recorded. The evaluations need the skill-creator plugin in a local session, which the cloud session that wrote them could not install. Phases 3, 5 and 6 went ahead on the fallback the plan allows.
+- **Phase 4:** the validator also gained `WARNINGS=<n>` on its summary line. Its test has 33 cases; 12 fail against the old script, and three mutants of the new one are each caught.
+- **Phase 6:** net savings were about 2,600 bytes, not 3,400. The estimate counted only removals; the phase also added `dependabot`'s checklist and moved one rule into its Phase 6.
+- **Phase 9:** the downstream check did not come back clean. Against a project scaffolded from `main`, every `.claude/` and synced-script change arrives as `NEW` (9) or `CHANGED` (16). Two edits fall outside what sync copies: the `.gitignore` line for evaluation workspaces, and the `skills-ci.yml` step that runs the new test. Because the release is Major anyway, both are listed under `### Migration steps` in `CHANGELOG.md`, so `/sync-from-template` proposes them.
+
+Still outstanding:
+
+1. Run the 15 evaluations on each model family available, and fill in `skill-eval-baseline.md`.
+2. In a fresh local session, run Phase 8's three checks: Claude suggests `/session-end` rather than running it; typing it still works and drafts through `/commit-msg`; and `/context` shows a smaller Skills row.
+3. Merge #29 to #37 and the close-out in order.
+4. Cut 3.0.0 and update `.template-version` then, not before.
 
 ## Decision log
 

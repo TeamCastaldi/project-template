@@ -2,7 +2,9 @@
 
 Status: **cases written, not yet run.** Phase 2 of [`skill-best-practices-plan.md`](skill-best-practices-plan.md) added three evaluations per skill (`.claude/skills/<name>/evals/evals.json`). Running them needs a local Claude Code session with the skill-creator plugin. The cloud session that wrote them could not install the plugin, so no numbers are recorded yet. How to run them, and the setup each case needs, is in [`.claude/skills/README.md`](../../.claude/skills/README.md#evaluations).
 
-This baseline is meant to be taken **before** Phase 3 lands. Phases 3, 5 and 6 change skill text. If they merge first, run their skills' cases on the merged text as well, and say so in the notes.
+As of the close-out (2026-10-07) they are still not run, and Phases 3, 5 and 6 are written, so the first run will be on the changed text. Record it here as the baseline anyway, and say so in the notes.
+
+This baseline was meant to be taken **before** Phase 3 lands. Phases 3, 5 and 6 change skill text. If they merge first, run their skills' cases on the merged text as well, and say so in the notes.
 
 ## How to record a run
 
