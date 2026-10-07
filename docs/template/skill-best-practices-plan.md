@@ -1,6 +1,6 @@
 # Plan: adopting the skill best-practices review
 
-Status: **Phase 0 complete (both decisions recorded); Phase 1 not started.** Written 2026-10-07 from [`skill-best-practices-review.md`](skill-best-practices-review.md) ("the review"). Item IDs (S1–S8, N1–N7, Decisions A and B) are the review's. Blueprint review items are prefixed `K` and its decisions are named in full, because both reviews have a "Decision A".
+Status: **Phase 0 complete (both decisions recorded); Phase 1 in progress on `fix/skill_script_paths`.** Written 2026-10-07 from [`skill-best-practices-review.md`](skill-best-practices-review.md) ("the review"). Item IDs (S1–S8, N1–N7, Decisions A and B) are the review's. Blueprint review items are prefixed `K` and its decisions are named in full, because both reviews have a "Decision A".
 
 Each phase is one branch and one pull request, named by `CONTRIBUTING.md`'s convention. The phases are ordered by dependency: an earlier phase never waits on a later one. Line numbers cited in the review will drift as phases land, so every phase starts by re-reading the files it changes rather than trusting a citation.
 
@@ -332,4 +332,4 @@ This comes last among the content phases, so it describes what the repo now does
 | Decision | Answer | Date | Notes |
 |---|---|---|---|
 | B: where evaluations live | **In each skill folder** (`.claude/skills/<name>/evals/`) | 2026-10-07 | skill-creator's default, and they change in the same PR as the skill. They reach every project at clone and on sync. A project that deletes them is re-offered them on each sync (blueprint D5). Sample files must not be collected by `pytest` or linted by `ruff` (Phase 2). |
-| A: commands set `disable-model-invocation: true` | **Yes** | 2026-10-07 | `/commit-msg` stays model-invocable, as recommended, so `/session-end` Step 3 keeps working. Confirm or overturn that before Phase 8. |
+| A: commands set `disable-model-invocation: true` | **Yes** | 2026-10-07 | `/commit-msg` stays model-invocable, confirmed 2026-10-07, so `/session-end` Step 3 keeps working. |
