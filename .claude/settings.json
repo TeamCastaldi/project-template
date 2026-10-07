@@ -26,6 +26,7 @@
     ],
     "allow": [
       "Bash(bash scripts/validate_skills.sh *)",
+      "Bash(bash scripts/test_validate_skills.sh *)",
       "Bash(bash scripts/check_doc_claims.sh *)",
       "Bash(bash scripts/check_scaffolded_project.sh *)",
       "Bash(bash scripts/test_check_doc_claims.sh *)",

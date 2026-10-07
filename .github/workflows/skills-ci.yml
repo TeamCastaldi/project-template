@@ -36,6 +36,9 @@ jobs:
       - name: Validate skill layout
         run: bash scripts/validate_skills.sh
 
+      - name: Test validate_skills.sh
+        run: bash scripts/test_validate_skills.sh
+
       - name: Check documentation claims
         run: bash scripts/check_doc_claims.sh
 
