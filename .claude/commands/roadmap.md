@@ -1,5 +1,6 @@
 ---
 description: Manage the project roadmap — create it from the repo's stated goals, evaluate it against the code, add items, and tick them off, without inventing scope.
+disable-model-invocation: true
 argument-hint: "[init | evaluate | add <item> | complete <item>]"
 ---
 
