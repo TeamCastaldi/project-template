@@ -42,6 +42,11 @@ fixture() {
   printf '# ADRs\n\n## Index\n\n| ADR | Title | Status |\n|-----|-------|--------|\n| _none yet_ | — | — |\n' \
     > "$dir/docs/ADRs/README.md"
 
+  # The issue tracking every scaffolded project keeps.
+  mkdir -p "$dir/.github/ISSUE_TEMPLATE" "$dir/.github/workflows" "$dir/scripts"
+  touch "$dir/.github/labels.yml" "$dir/.github/ISSUE_TEMPLATE/bug.yml" \
+    "$dir/.github/workflows/label-sync.yml" "$dir/scripts/sync_labels.sh" "$dir/scripts/check_issues.sh"
+
   printf '%s' "$dir"
 }
 
@@ -124,6 +129,14 @@ assert_hit "catches a missing foundation.md" "$d" MISSING_FILE
 
 d="$(fixture)"; rm "$d/.template-version"
 assert_hit "catches a missing .template-version" "$d" MISSING_FILE
+
+for f in .github/labels.yml .github/workflows/label-sync.yml scripts/sync_labels.sh scripts/check_issues.sh; do
+  d="$(fixture)"; rm "$d/$f"
+  assert_hit "catches a missing $f" "$d" MISSING_FILE
+done
+
+d="$(fixture)"; rm "$d/.github/ISSUE_TEMPLATE/bug.yml"; touch "$d/.github/ISSUE_TEMPLATE/notes.md"
+assert_hit "catches an ISSUE_TEMPLATE folder with no form in it" "$d" MISSING_FILE
 
 # ------------------------------------------------------------ template residue
 

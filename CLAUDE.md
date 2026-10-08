@@ -77,7 +77,6 @@ deletes that folder and resets this value to docs/session-history/.
 | `DOCS_ROOT` | docs/ |
 | `ADR_PATH` | docs/ADRs/ |
 | `SNAPSHOT_PATH` | docs/template/ |
-| `ROADMAP_PATH` | docs/plans/ROADMAP.md |
 
 ## Code style
 

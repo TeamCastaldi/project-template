@@ -20,13 +20,14 @@ Every command, skill and hook in this folder, one line each. `/sync-template` ch
 | Command | `/branch-workflow` | Start a unit of work on a named branch, with a starter checklist per work type |
 | Command | `/audit-tests` | Audit the whole test suite against `testing-standards` and write a dated, machine-checked report |
 | Command | `/commit-msg` | Draft a Conventional Commit message from the staged diff and session context |
-| Command | `/roadmap` | Create, evaluate, add to and tick off the roadmap at `ROADMAP_PATH`, citing a source for every item |
+| Command | `/roadmap` | Seed the repo's GitHub Issues from its stated goals, audit the open ones against the code, or migrate an old `ROADMAP.md` into issues |
 | Command | `/session-end` | Write the session snapshot, run the test and lint gate, then commit and push behind confirmations |
 | Command | `/session-start` | Scan repo state and history, pick a mission, and work it one verified step at a time |
 | Command | `/sync-template` | Audit folders, READMEs and tooling for drift from each other, then fix it |
 | Skill | `dependabot` | Triage open Dependabot PRs by SemVer risk and consolidate the safe ones |
 | Skill | `docs-updater` | Bring READMEs and `CLAUDE.md` up to date with work a session completed |
 | Skill | `init-project` | One-time setup interview and scaffolding for a fresh clone |
+| Skill | `issue-tracker` | File, find, start, block and close the repo's GitHub Issues from ordinary conversation |
 | Skill | `sync-from-template` | Pull newer commands, skills and the scripts they run from the upstream template repo, with a diff per file |
 | Skill | `testing-standards` | Rules for what makes a test worth keeping, applied when writing or reviewing one |
 | Hook | `session-start-hook.sh` | On `SessionStart`, warn if `TEST_COMMAND` cannot run; silent otherwise |
@@ -129,7 +130,7 @@ What is configured here:
 
 **Deny** — reads of secret-bearing files: `.env` and its real-secret variants, `*.pem`, `*.p12`, SSH private keys, `credentials.json`, `.aws/credentials`, `.npmrc`, `.pypirc`. `.gitignore` stops these being *committed*; it does nothing to stop their contents entering a conversation. Note `.env.example` is deliberately **not** denied — it carries no secrets and is often the fastest way to understand a project's configuration.
 
-**Allow** — only the read-only checks this repo ships, by exact script path. Nothing stack-specific: the template cannot know whether a project's tests are `pytest` or `vitest`, so allowlisting either would be a guess applied to every clone. `simulate_init.sh` is deliberately excluded — it writes a directory tree the caller names, which is not read-only.
+**Allow** — only the read-only checks this repo ships, by exact script path. `sync_labels.sh` writes to GitHub, so only its `--check` form is allowed. Nothing stack-specific: the template cannot know whether a project's tests are `pytest` or `vitest`, so allowlisting either would be a guess applied to every clone. `simulate_init.sh` is deliberately excluded — it writes a directory tree the caller names, which is not read-only.
 
 **Ask** — force-push, hard reset, branch delete, `git clean -f`. These already prompt under the default permission mode; the rules are a backstop for a project that later loosens `defaultMode`, and they keep the operation *possible*, which a flat deny would not. A deny here sends someone editing settings mid-incident.
 

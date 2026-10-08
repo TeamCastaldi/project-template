@@ -133,7 +133,7 @@ Once the user approves the plan:
    - `scripts/simulate_init.sh` — it builds an as-if-initialized fixture from the template, and has nothing to simulate once the real thing exists.
    - `docs/template/` — the template's own session snapshots and reviews. Delete the whole folder rather than a list of files: the template adds a snapshot every session, so no list of names could stay current. This is safe only because this is a first scaffold, where every file in it is the template's. Never delete `docs/session-history/` snapshots: once the project exists, those are its own.
 
-   Keep `.github/workflows/skills-ci.yml` and `scripts/check_scaffolded_project.sh`: the first tests the skills this project keeps, and the second is how anyone later confirms the project still looks properly scaffolded.
+   Keep `.github/workflows/skills-ci.yml` and `scripts/check_scaffolded_project.sh`: the first tests the skills this project keeps, and the second is how anyone later confirms the project still looks properly scaffolded. Keep the issue tracking as shipped, too — `.github/labels.yml`, `.github/ISSUE_TEMPLATE/`, `.github/workflows/label-sync.yml`, `scripts/sync_labels.sh`, `scripts/check_issues.sh`. It needs no project-specific edits.
 1. Work out and present the cloud environment recommendation in [`references/cloud-environment.md`](references/cloud-environment.md), using the install and test commands just written into the manifest and CI workflow.
 
 ## Phase 4: re-point the inherited docs
@@ -172,6 +172,7 @@ This document is a founding brief, and later sessions should treat it as one: a 
 1. Summarize what you created: folder list, files written, and confirmation that `CLAUDE.md` and `foundation.md` are updated.
 1. List the ADR files this session wrote in `docs/ADRs/`, and confirm that README's `## Index` table and CLAUDE.md's `## Decision log` both name the exact same set of files.
 1. Restate the Phase 3 cloud environment recommendation (Network access, Environment variables, Setup script; see [`references/cloud-environment.md`](references/cloud-environment.md)) as the three ready-to-paste blocks, so it's not left buried mid-transcript — this is the thing the user is most likely to need again the moment they open the "Add cloud environment" dialog.
+1. Make the issue tracker live: run the `issue-tracker` skill's "Labels ready" check (its section 2) and, if labels are missing, offer to create them now. With no GitHub remote yet, say the "Sync labels" workflow creates them on the first push to `main`. Then offer `/roadmap seed` to file this interview's goals as issues.
 1. List the inherited docs Phase 4 rewrote, separately from the files you created. These are the ones the user is least likely to re-read on their own, so they are the ones worth naming — and if you deleted anything, `docs/api/` most likely, say so plainly rather than leaving them to notice.
 1. Run the scaffolding verifier and report it clean:
 
