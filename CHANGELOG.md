@@ -27,7 +27,9 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
-The next release is **Major (3.0.0)**: six commands no longer start on their own (see the first entry under Changed). Most of the rest came from the skill best-practices review in `docs/template/`; the issue tracking on GitHub Issues replaced a file-based `/roadmap` that never shipped in a release. Edits that fall outside what `/sync-from-template` copies are listed under Migration steps at the end of this section.
+## [3.0.0] - 2026-10-08
+
+**Major.** Six commands no longer start on their own (see the first entry under Changed). Most of the rest came from the skill best-practices review in `docs/template/`; the issue tracking on GitHub Issues replaced a file-based `/roadmap` that never shipped in a release. Edits that fall outside what `/sync-from-template` copies are listed under Migration steps at the end of this section.
 
 ### Added
 
@@ -182,7 +184,9 @@ First versioned release. Everything before this point is unversioned history; `1
 
 - The `version-upgrade-planner` skill. It was specific to one person's home lab rather than to building software, its file was named `version-upgrade-planner-SKILL.md` so it never loaded, and a redundant packaged `.skill` archive sat beside it. The working copy lives in a marketplace, where a personal skill belongs.
 
-[Unreleased]: https://github.com/TeamCastaldi/project-template/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/TeamCastaldi/project-template/releases/tag/v2.0.0
-[1.1.0]: https://github.com/TeamCastaldi/project-template/releases/tag/v1.1.0
-[1.0.0]: https://github.com/TeamCastaldi/project-template/releases/tag/v1.0.0
+[Unreleased]: https://github.com/TeamCastaldi/project-template/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/TeamCastaldi/project-template/compare/v2.1.0...v3.0.0
+[2.1.0]: https://github.com/TeamCastaldi/project-template/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/TeamCastaldi/project-template/compare/v1.1.0...v2.0.0
+[1.1.0]: https://github.com/TeamCastaldi/project-template/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/TeamCastaldi/project-template/tree/v1.0.0
