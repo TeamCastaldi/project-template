@@ -20,9 +20,10 @@ the template repo, and pulls its current `.claude` folder — commands and
 skills — in. Every file that differs is shown as a diff and held for confirmation before
 it touches anything on disk. Nothing is overwritten silently.
 
-Some of those commands run scripts that live outside `.claude/` — `/roadmap`
-runs `scripts/check_roadmap.sh`, `/sync-template` runs
-`scripts/validate_skills.sh`. The template lists exactly those files in
+Some of those commands and skills depend on files that live outside
+`.claude/` — `/sync-template` runs `scripts/validate_skills.sh`, and the
+`issue-tracker` skill needs `.github/labels.yml`, the issue forms and the label
+workflow. The template lists exactly those files in
 [`tooling_paths.txt`](tooling_paths.txt), and they are offered alongside
 `.claude/` under the same diff-and-confirm rules. Nothing else outside
 `.claude/` is ever touched.
@@ -240,7 +241,15 @@ If the user applied only some of the `CHANGED` files, or only some of the
 pending migration steps, say so and ask before stamping: the version is a
 claim about the whole synced tree, and a partial apply does not support it.
 
-### 5. Clean up
+### 5. Labels, if this brought in issue tracking
+
+If `.github/labels.yml` or `.github/workflows/label-sync.yml` was just applied,
+the repo's GitHub labels may not exist yet. Run the `issue-tracker` skill's
+"Labels ready" check (its section 2) and, if labels are missing, offer to
+create them now. If they can't be created from this session, say the "Sync
+labels" workflow creates them once the sync commit reaches `main`.
+
+### 6. Clean up
 
 Once the user is done applying changes (or decides not to apply any), remove
 the temp clone:
@@ -252,7 +261,7 @@ rm -rf "$TEMP_CLONE"
 This is safe to run without asking first -- `$TEMP_CLONE` is a directory this
 skill created a few minutes ago under `mktemp -d`, not anything of the user's.
 
-### 6. Suggest a commit
+### 7. Suggest a commit
 
 Once at least one file was applied, suggest (don't run) a commit:
 

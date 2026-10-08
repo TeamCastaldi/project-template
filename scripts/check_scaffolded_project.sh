@@ -22,7 +22,9 @@
 #                    and it slips past the placeholder check precisely because
 #                    the placeholder was removed
 #   MISSING_FILE     a file every scaffolded project must have is absent
-#                    (docs/foundation.md, .template-version)
+#                    (docs/foundation.md, .template-version, and the issue
+#                    tracking the template ships ready to use: labels.yml,
+#                    the issue forms, label-sync.yml and its two scripts)
 #   TEMPLATE_RESIDUE a file belonging to the template itself was carried into
 #                    the project (CHANGELOG.md still logging template releases;
 #                    the docs/template/ folder of the template's own session
@@ -135,6 +137,17 @@ fi
 
 [[ -f "$ROOT/.template-version" ]] || \
   problem MISSING_FILE ".template-version" "records the template version this project came from"
+
+# Issue tracking works in a new repo with no setup only because these files
+# arrive with it, and init-project's Phase 3 keeps them. The issue-tracker
+# skill, /roadmap and /session-start all stand on them.
+for f in .github/labels.yml .github/workflows/label-sync.yml scripts/sync_labels.sh scripts/check_issues.sh; do
+  [[ -f "$ROOT/$f" ]] || \
+    problem MISSING_FILE "$f" "part of the issue tracking init-project keeps"
+done
+if ! compgen -G "$ROOT/.github/ISSUE_TEMPLATE/*.yml" >/dev/null; then
+  problem MISSING_FILE ".github/ISSUE_TEMPLATE/" "no issue forms; init-project keeps the shipped ones"
+fi
 
 # ------------------------------------------------------------ template residue
 
