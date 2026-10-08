@@ -28,4 +28,4 @@
 
 ## Related
 
-<!-- Link to issue, ADR, or planning doc if relevant -->
+<!-- `Closes #N` for the issue this finishes, so merging closes it. Link an ADR or planning doc if relevant. -->

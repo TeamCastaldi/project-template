@@ -4,7 +4,7 @@ Thanks for your interest in contributing to this template. This document covers 
 
 ## Workflow
 
-No issue required. If you spot something wrong or missing, go straight to a branch.
+No issue required for a small fix. If you spot something wrong or missing, go straight to a branch. Planned work lives in GitHub Issues — see [`docs/SOPs/SOP-issue-tracking.md`](docs/SOPs/SOP-issue-tracking.md) for the labels and how to file one, or just tell Claude what to note.
 
 ### 1. Branch
 
@@ -45,7 +45,8 @@ bash scripts/test_validate_skills.sh
 bash scripts/check_doc_claims.sh                 # docs vs. what the repo contains
 bash scripts/test_check_doc_claims.sh
 bash scripts/test_check_scaffolded_project.sh
-bash scripts/test_check_roadmap.sh
+bash scripts/test_sync_labels.sh
+bash scripts/test_check_issues.sh
 bash .claude/hooks/test_session-start-hook.sh
 bash .claude/skills/init-project/scripts/test_check_inherited_docs.sh
 bash .claude/skills/sync-from-template/scripts/test_compare_template.sh

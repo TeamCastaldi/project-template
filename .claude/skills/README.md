@@ -95,6 +95,8 @@ skill-creator's documented layout puts run output in a `<name>-workspace/` folde
 | `docs-updater` | 1–3 | The `python-cli` project above, with the `export` command from case 1's fixture committed: in the project, run `git am .claude/skills/docs-updater/evals/files/export-command.patch`. Cases 2 and 3 don't use it, and it doesn't affect them. |
 | `init-project` | 1, 3 | A fresh clone of the template. They do not apply in a project. |
 | `init-project` | 2 | An initialized project. |
+| `issue-tracker` | 1, 2 | An initialized project pushed to a GitHub repo you can write to, with `gh` logged in or the GitHub connector attached. Case 1 must not file anything before the draft is approved; close any issue a run does file. |
+| `issue-tracker` | 3 | The same, after filing an issue labelled `status:planned` and `type:feature`, and editing the prompt to name its number in place of `#12`. |
 | `sync-from-template` | 1 | An initialized project with one line of `.claude/commands/commit-msg.md` edited, so the report has a change to show. It needs network access to the template repo. |
 | `sync-from-template` | 2 | An initialized project. |
 | `sync-from-template` | 3 | An initialized project with an extra `.claude/commands/local-note.md`. |

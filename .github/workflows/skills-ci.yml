@@ -54,8 +54,11 @@ jobs:
       - name: Test check_scaffolded_project.sh
         run: bash scripts/test_check_scaffolded_project.sh
 
-      - name: Test check_roadmap.sh
-        run: bash scripts/test_check_roadmap.sh
+      - name: Test sync_labels.sh
+        run: bash scripts/test_sync_labels.sh
+
+      - name: Test check_issues.sh
+        run: bash scripts/test_check_issues.sh
 
       - name: Test session-start-hook.sh
         run: bash .claude/hooks/test_session-start-hook.sh
