@@ -75,7 +75,7 @@ An issue has exactly one status label at a time. Tell Claude "start #12" or "#12
 - **"What's open?"** — ask Claude, or run the checker yourself:
 
   ```bash
-  gh issue list --state open --limit 1000 --json number,title,state,labels,body \
+  gh api 'repos/{owner}/{repo}/issues?state=open&per_page=100' --paginate \
     | bash scripts/check_issues.sh -
   ```
 

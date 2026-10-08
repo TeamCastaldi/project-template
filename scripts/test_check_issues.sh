@@ -2,7 +2,7 @@
 # test_check_issues.sh
 #
 # Tests for check_issues.sh. Each case writes a small issues JSON file — built
-# with jq, in the shape `gh issue list --json` returns unless a case says
+# with jq, in the shape the REST issues endpoint returns unless a case says
 # otherwise — next to a copy of the repo's .github/labels.yml, and asserts on
 # the tab-separated output.
 #
@@ -103,6 +103,21 @@ rm -rf "$d"
 
 d="$(fixture)"; echo '{"issues":[{"number":7,"title":"REST shape","state":"open","body":null,"labels":["status:backlog","type:idea"]}],"pageInfo":{}}' > "$d/issues.json"
 assert_hit "REST-style input: wrapped in .issues, labels as strings, null body" "$d" BACKLOG $'#7\t[idea] [-] REST shape'
+
+d="$(fixture)"
+printf '%s\n' "$(issue 1 'status:backlog,type:idea' | jq -s .)" "$(issue 2 'status:backlog,type:bug' | jq -s .)" > "$d/issues.json"
+assert_hit "back-to-back arrays, as gh api --paginate prints them, are all read" "$d" BACKLOG '#2'
+
+d="$(fixture)"
+printf '%s\n' "$(issue 1 'status:backlog,type:idea' | jq -c .)" "$(issue 2 'status:backlog,type:bug' | jq -c .)" > "$d/issues.json"
+assert_hit "one issue object per line is read" "$d" BACKLOG '#2'
+
+d="$(fixture)"
+issue 4 'status:backlog,type:bug' | jq '. + {pull_request: {url: "x"}}' | jq -s . > "$d/issues.json"
+run "$d" issues.json
+if grep -q '^IN_PROGRESS=0 PLANNED=0 BLOCKED=0 BACKLOG=0 UNSORTED=0 FLAGS=0$' <<<"$out"; then pass=$((pass + 1)); else
+  fail=$((fail + 1)); echo "FAIL: pull requests from the REST issues endpoint are skipped"; indent "$out"; fi
+rm -rf "$d"
 
 d="$(fixture "$(issue 1 'status:backlog,type:idea')")"
 out="$(cd "$d" && "$SUT" - < issues.json 2>&1)"; code=$?

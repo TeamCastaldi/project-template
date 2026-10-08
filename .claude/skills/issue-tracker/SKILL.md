@@ -27,10 +27,33 @@ The repo's GitHub Issues are where its planned work lives. This skill keeps ever
 
 Use whatever this session has, in this order:
 
-1. `gh`, when `gh auth token >/dev/null 2>&1` succeeds. The repo is the one `gh repo view --json nameWithOwner` names.
+1. `gh`, when `gh api 'repos/{owner}/{repo}' --jq .full_name` prints the repo. Use **only `gh api`** (REST), never `gh issue …`, `gh label …` or `gh repo view`: those use GraphQL, which Claude Code cloud sessions refuse with HTTP 403 while REST works. `{owner}/{repo}` in a path is filled in from this directory's git remote. The calls this skill needs are in the table below.
 2. The GitHub connector's tools (`list_issues`, `search_issues`, `issue_read`, `issue_write`, `add_issue_comment`, `actions_run_trigger`). Take owner and repo from `git remote get-url origin`.
 
 With neither, say once what is missing and stop. Locally: install `gh` and run `gh auth login`. In a cloud session: connect GitHub to Claude and add this repo to the session. Never fall back to writing the issue into a file; the point is one place to look.
+
+The `gh api` calls this skill needs:
+
+```bash
+# read an issue, and its comments
+gh api 'repos/{owner}/{repo}/issues/12'
+gh api 'repos/{owner}/{repo}/issues/12/comments'
+# look for duplicates, open and closed: list them and filter here (the search
+# API is not repo-scoped, and cloud sessions refuse it)
+gh api 'repos/{owner}/{repo}/issues?state=all&per_page=100' --paginate \
+  --jq '.[] | select(.pull_request == null) | [.number, .state, .title] | @tsv' | grep -i -E 'export|safari'
+# file one, body from a file in the scratchpad
+gh api 'repos/{owner}/{repo}/issues' -f title='Fix export on Safari' \
+  -f body="$(cat "$SCRATCH/issue.md")" -f 'labels[]=type:bug' -f 'labels[]=status:backlog'
+# set labels (replaces the whole set: send every label it keeps), title or body
+gh api -X PATCH 'repos/{owner}/{repo}/issues/12' -f 'labels[]=type:bug' -f 'labels[]=status:in-progress'
+# comment
+gh api 'repos/{owner}/{repo}/issues/12/comments' -f body='Blocked on #9.'
+# close: completed, or not_planned
+gh api -X PATCH 'repos/{owner}/{repo}/issues/12' -f state=closed -f state_reason=completed
+```
+
+The REST issues endpoints return pull requests too; anything with a `pull_request` field is a PR, not an issue.
 
 ## 2. Labels ready
 
@@ -51,7 +74,7 @@ If `scripts/sync_labels.sh` or `.github/labels.yml` is missing, this repo has no
 
 ## 3. Capture — "note this for later"
 
-1. **Duplicates.** Search open and closed issues for the same thing (`gh issue list --state all --search "<key words>"`, or `search_issues`). If one exists, show it and ask whether to add to it instead.
+1. **Duplicates.** Look through open and closed issues for the same thing (the duplicate listing above, or `search_issues`). If one exists, show it and ask whether to add to it instead.
 2. **Type.** Exactly one: `type:bug` (broken), `type:feature` (new), `type:improvement` (refines what works), `type:debt` (refactor, cleanup, infra), `type:idea` (not yet shaped). If two fit, ask.
 3. **Status.** `status:backlog`, unless the user says it is next (`status:planned`) or they are doing it now (`status:in-progress`).
 4. **Priority.** Only if the user stated one, mapped to `p0:critical`, `p1:high`, `p2:medium` or `p3:low`.
@@ -75,7 +98,7 @@ Show the draft — title, labels, body — and file it on a yes. Report `#N` and
 Fetch the open issues as JSON and run the checker on them:
 
 ```bash
-gh issue list --state open --limit 1000 --json number,title,state,labels,body \
+gh api 'repos/{owner}/{repo}/issues?state=open&per_page=100' --paginate \
   | bash scripts/check_issues.sh -
 ```
 

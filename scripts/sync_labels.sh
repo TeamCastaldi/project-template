@@ -17,9 +17,12 @@
 # lines are skipped. Anything else stops the run with exit 2 and the line
 # number — a label silently dropped would look like a sync that worked.
 #
-# Needs `gh`, logged in (or GH_TOKEN set, as the workflow does). The repo is
-# whichever one gh resolves from the current directory, or GH_REPO if set.
-# The JSON is shaped with gh's built-in --jq, so jq itself is not needed.
+# Needs `gh`, logged in (or GH_TOKEN set, as the workflow does). Every call is
+# `gh api` against the REST API, never `gh label …`: those subcommands use
+# GraphQL, which Claude Code cloud sessions do not allow, while REST works
+# there, locally and in Actions alike. The repo is the one the {owner}/{repo}
+# placeholders resolve to — this directory's git remote, or GH_REPO if set.
+# JSON is shaped with gh's built-in --jq, so jq itself is not needed.
 #
 # Usage:
 #   sync_labels.sh [--check] [labels_file]
@@ -142,13 +145,27 @@ if ! command -v gh >/dev/null 2>&1; then
   exit 2
 fi
 
-# One call. @tsv escapes tabs and newlines inside a value, so each label is
-# exactly one line.
-if ! remote="$(gh label list --limit 1000 --json name,color,description \
-                 --jq '.[] | [.name, .color, .description] | @tsv')"; then
-  echo "sync_labels.sh: gh label list failed — is gh logged in (gh auth login) and is this a GitHub repo?" >&2
+# @tsv escapes tabs and newlines inside a value, so each label is exactly one
+# line. A repo with under 100 labels is one page, so one request.
+if ! remote="$(gh api 'repos/{owner}/{repo}/labels?per_page=100' --paginate \
+                 --jq '.[] | [.name, .color, (.description // "")] | @tsv')"; then
+  echo "sync_labels.sh: could not list labels — is gh logged in (gh auth login) and is this a GitHub repo?" >&2
   exit 2
 fi
+
+# A label name goes into the URL path when it is updated, so escape everything
+# but the unreserved characters. Byte by byte, so a multi-byte name survives.
+urlencode() {
+  local LC_ALL=C s="$1" out="" ch i
+  for (( i = 0; i < ${#s}; i++ )); do
+    ch="${s:i:1}"
+    case "$ch" in
+      [A-Za-z0-9._~-]) out+="$ch" ;;
+      *) out+="$(printf '%%%02X' "'$ch")" ;;
+    esac
+  done
+  printf '%s' "$out"
+}
 
 r_names=()
 r_colors=()
@@ -179,8 +196,9 @@ for (( i = 0; i < ${#names[@]}; i++ )); do
     emit CREATE "$n" "#$c $d"
     n_create=$((n_create + 1))
     if (( ! CHECK )); then
-      gh label create "$n" --color "$c" --description "$d" >/dev/null \
-        || { echo "sync_labels.sh: gh label create \"$n\" failed" >&2; exit 2; }
+      gh api -X POST 'repos/{owner}/{repo}/labels' \
+          -f name="$n" -f color="$c" -f description="$d" >/dev/null \
+        || { echo "sync_labels.sh: creating label \"$n\" failed" >&2; exit 2; }
     fi
   elif [[ "${r_colors[j]}" != "$c" || "${r_descs[j]}" != "$d" ]]; then
     detail=""
@@ -191,8 +209,9 @@ for (( i = 0; i < ${#names[@]}; i++ )); do
     emit UPDATE "$n" "$detail"
     n_update=$((n_update + 1))
     if (( ! CHECK )); then
-      gh label edit "$n" --color "$c" --description "$d" >/dev/null \
-        || { echo "sync_labels.sh: gh label edit \"$n\" failed" >&2; exit 2; }
+      gh api -X PATCH "repos/{owner}/{repo}/labels/$(urlencode "$n")" \
+          -f color="$c" -f description="$d" >/dev/null \
+        || { echo "sync_labels.sh: updating label \"$n\" failed" >&2; exit 2; }
     fi
   else
     emit OK "$n" ""

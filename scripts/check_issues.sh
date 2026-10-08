@@ -9,16 +9,20 @@
 # with forty issues, "this one has two status labels" is easy to miss and
 # trivial to count.
 #
-# Input is the issues as JSON, from either tool a session might have:
+# Input is the issues as JSON, from whichever tool a session has:
 #
-#   gh issue list --state open --limit 1000 --json number,title,state,labels,body \
+#   gh api 'repos/{owner}/{repo}/issues?state=open&per_page=100' --paginate \
 #     | bash scripts/check_issues.sh -
 #
-# or the GitHub connector's list_issues output saved to a file. Only the
-# fields both share are read: number, title, state, body, and label names
-# (label objects or plain strings). A top-level array is expected; an object
-# carrying the array under `issues` or `items` is accepted too. Closed issues
-# are skipped, whether the state reads OPEN or open.
+# (REST on purpose: `gh issue list` uses GraphQL, which Claude Code cloud
+# sessions do not allow), or the GitHub connector's list_issues output saved to
+# a file. Only the fields every source shares are read: number, title, state,
+# body, and label names (label objects or plain strings). Any sequence of JSON
+# values is accepted — one array, the back-to-back arrays --paginate prints,
+# objects carrying the array under `issues` or `items` (one per page), or one
+# issue object per line. Pull requests, which the REST issues endpoint returns
+# too, are skipped, and so are closed issues, whether the state reads OPEN or
+# open.
 #
 # The body is read by its `### ` sections — the headings the issue forms
 # produce and the issue-tracker skill writes.
@@ -112,11 +116,13 @@ JQ='
        elif .cur == $want and (.fence | not) then .out += [$l]
        else . end)
     | .out;
-  (if type == "array" then .
-   elif type == "object" and (.issues | type) == "array" then .issues
-   elif type == "object" and (.items | type) == "array" then .items
-   else error("expected a JSON array of issues") end)
-  | .[]
+  .[]
+  | if type == "array" then .[]
+    elif type == "object" and (.issues | type) == "array" then .issues[]
+    elif type == "object" and (.items | type) == "array" then .items[]
+    elif type == "object" and has("number") then .
+    else error("expected issues: an array, pages of arrays, or issue objects") end
+  | select(.pull_request == null)
   | select(((.state // "open") | ascii_downcase) != "closed")
   | (section("acceptance criteria") | map(select(test("^\\s*[-*+]\\s+\\[[ xX]\\]")))) as $boxes
   | (section("dependencies")) as $deps
@@ -131,7 +137,7 @@ JQ='
   | join("\u001e")
 '
 
-if ! rows="$(jq -r "$JQ" <<<"$json" 2>&1)"; then
+if ! rows="$(jq -r -s "$JQ" <<<"$json" 2>&1)"; then
   echo "check_issues.sh: could not read the issues: $rows" >&2
   exit 2
 fi

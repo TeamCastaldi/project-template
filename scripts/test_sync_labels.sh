@@ -2,10 +2,10 @@
 # test_sync_labels.sh
 #
 # Tests for sync_labels.sh. Each case builds a throwaway directory with a
-# labels file and a stub `gh` on PATH. The stub answers `gh label list` from a
-# JSON fixture, run through the --jq expression the script passes — so that
-# expression is tested too, which needs jq — and logs every create or edit
-# instead of calling GitHub.
+# labels file and a stub `gh` on PATH. The stub answers the script's
+# `gh api … --jq` label listing from a JSON fixture, run through the --jq
+# expression the script passes — so that expression is tested too, which needs
+# jq — and logs every POST or PATCH instead of calling GitHub.
 #
 # Usage:
 #   test_sync_labels.sh
@@ -39,25 +39,31 @@ fixture() {
   : > "$dir/log"
   cat > "$dir/bin/gh" <<'STUB'
 #!/usr/bin/env bash
-case "${1:-} ${2:-}" in
-  "label list")
-    if [[ -n "${STUB_FAIL_LIST:-}" ]]; then echo "HTTP 401: Bad credentials" >&2; exit 1; fi
-    expr='.'
-    while [[ $# -gt 0 ]]; do
-      if [[ "$1" == --jq ]]; then expr="$2"; shift; fi
-      shift
-    done
-    jq -r "$expr" "$STUB_DIR/remote.json"
-    ;;
-  "label create"|"label edit")
-    printf '%s|' "$@" >> "$STUB_DIR/log"
-    printf '\n' >> "$STUB_DIR/log"
-    ;;
-  *)
-    echo "gh stub: unexpected call: $*" >&2
-    exit 99
-    ;;
-esac
+[[ "${1:-}" == api ]] || { echo "gh stub: only gh api is expected, got: $*" >&2; exit 99; }
+shift
+method=GET expr='.' path=''
+args=("$@")
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -X) method="$2"; shift ;;
+    --jq) expr="$2"; shift ;;
+    -f|-F) shift ;;
+    --paginate) ;;
+    -*) echo "gh stub: unexpected flag $1" >&2; exit 99 ;;
+    *) path="$1" ;;
+  esac
+  shift
+done
+if [[ "$method" == GET && "$path" == 'repos/{owner}/{repo}/labels?per_page=100' ]]; then
+  if [[ -n "${STUB_FAIL_LIST:-}" ]]; then echo "HTTP 401: Bad credentials" >&2; exit 1; fi
+  jq -r "$expr" "$STUB_DIR/remote.json"
+elif [[ "$method" == POST || "$method" == PATCH ]]; then
+  printf '%s|' "${args[@]}" >> "$STUB_DIR/log"
+  printf '\n' >> "$STUB_DIR/log"
+else
+  echo "gh stub: unexpected call: api ${args[*]}" >&2
+  exit 99
+fi
 STUB
   chmod +x "$dir/bin/gh"
   printf '%s' "$dir"
@@ -92,15 +98,15 @@ ONE='- name: "status:backlog"
 # ------------------------------------------------------------------ actions
 
 d="$(fixture "$ONE" '[]')"; run "$d"
-if has_line "$out" CREATE "status:backlog" && logged "$d" 'label|create|status:backlog|--color|ededed|--description|Noted, not yet prioritized|'; then ok; else bad "a missing label is created with its colour and description" "$d"; fi
+if has_line "$out" CREATE "status:backlog" && logged "$d" '-X|POST|repos/{owner}/{repo}/labels|-f|name=status:backlog|-f|color=ededed|-f|description=Noted, not yet prioritized|'; then ok; else bad "a missing label is created with its colour and description" "$d"; fi
 rm -rf "$d"
 
 d="$(fixture "$ONE" '[{"name":"status:backlog","color":"000000","description":"Noted, not yet prioritized"}]')"; run "$d"
-if has_line "$out" UPDATE "color #000000 -> #ededed" && logged "$d" 'label|edit|status:backlog|--color|ededed|'; then ok; else bad "a drifted colour is updated" "$d"; fi
+if has_line "$out" UPDATE "color #000000 -> #ededed" && logged "$d" '-X|PATCH|repos/{owner}/{repo}/labels/status%3Abacklog|-f|color=ededed|'; then ok; else bad "a drifted colour is updated" "$d"; fi
 rm -rf "$d"
 
 d="$(fixture "$ONE" '[{"name":"status:backlog","color":"ededed","description":"old words"}]')"; run "$d"
-if has_line "$out" UPDATE 'description "old words" -> "Noted, not yet prioritized"' && logged "$d" 'label|edit|status:backlog|'; then ok; else bad "a drifted description is updated" "$d"; fi
+if has_line "$out" UPDATE 'description "old words" -> "Noted, not yet prioritized"' && logged "$d" '-X|PATCH|repos/{owner}/{repo}/labels/status%3Abacklog|'; then ok; else bad "a drifted description is updated" "$d"; fi
 rm -rf "$d"
 
 d="$(fixture "$ONE" '[{"name":"status:backlog","color":"EDEDED","description":"Noted, not yet prioritized"}]')"; run "$d"
@@ -130,7 +136,7 @@ rm -rf "$d"
 d="$(fixture '- name: "status:blocked"
   color: "5319e7"
   description: "Waiting: see \"Dependencies\""' '[]')"; run "$d"
-if logged "$d" '--description|Waiting: see "Dependencies"|'; then ok; else bad "a description keeps its colon and escaped quotes" "$d"; fi
+if logged "$d" '-f|description=Waiting: see "Dependencies"|'; then ok; else bad "a description keeps its colon and escaped quotes" "$d"; fi
 rm -rf "$d"
 
 d="$(fixture '# a comment
@@ -138,13 +144,19 @@ d="$(fixture '# a comment
 - name: tooling
   color: bfdadc
   description: Dev tooling   ' '[]')"; run "$d"
-if logged "$d" 'label|create|tooling|--color|bfdadc|--description|Dev tooling|'; then ok; else bad "bare values parse, comments and trailing spaces are dropped" "$d"; fi
+if logged "$d" '-f|name=tooling|-f|color=bfdadc|-f|description=Dev tooling|'; then ok; else bad "bare values parse, comments and trailing spaces are dropped" "$d"; fi
 rm -rf "$d"
 
 d="$(fixture '- name: "a"
   color: "ABCDEF"
-  description: ""' '[{"name":"a","color":"abcdef","description":""}]')"; run "$d" --check
-if [[ $code -eq 0 ]]; then ok; else bad "an upper-case colour in the file matches GitHub's lower case" "$d"; fi
+  description: ""' '[{"name":"a","color":"abcdef","description":null}]')"; run "$d" --check
+if [[ $code -eq 0 ]]; then ok; else bad "an upper-case colour matches GitHub's lower case, and a null description matches an empty one" "$d"; fi
+rm -rf "$d"
+
+d="$(fixture '- name: "good first issue"
+  color: "7057ff"
+  description: "Newcomers"' '[{"name":"good first issue","color":"000000","description":"Newcomers"}]')"; run "$d"
+if logged "$d" '-X|PATCH|repos/{owner}/{repo}/labels/good%20first%20issue|'; then ok; else bad "a label name is URL-encoded in the update path" "$d"; fi
 rm -rf "$d"
 
 # ------------------------------------------------------------------ exit 2

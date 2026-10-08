@@ -29,12 +29,12 @@ The failure this command exists to prevent is a backlog that drifts into inventi
 
 ## GitHub access and the check script
 
-Use the access the `issue-tracker` skill describes (its section 1): `gh` when logged in, else the GitHub connector. With neither, stop and say so — there is no offline roadmap to fall back to. Confirm the labels exist the way its section 2 does before any write.
+Use the access the `issue-tracker` skill describes (its section 1): `gh`, through `gh api` REST calls only, else the GitHub connector. With neither, stop and say so — there is no offline roadmap to fall back to. Confirm the labels exist the way its section 2 does before any write.
 
 Read the open issues through [`scripts/check_issues.sh`](../../scripts/check_issues.sh):
 
 ```bash
-gh issue list --state open --limit 1000 --json number,title,state,labels,body \
+gh api 'repos/{owner}/{repo}/issues?state=open&per_page=100' --paginate \
   | bash scripts/check_issues.sh -
 ```
 

@@ -35,7 +35,7 @@ Perform all of the following before responding:
 5. **Open issues** — the work noted for later lives in the repo's GitHub Issues. With `gh` logged in, or the GitHub connector in a cloud session, read the open issues through the checker, which lists them in pick-up order:
 
    ```bash
-   gh issue list --state open --limit 1000 --json number,title,state,labels,body \
+   gh api 'repos/{owner}/{repo}/issues?state=open&per_page=100' --paginate \
      | bash scripts/check_issues.sh -
    ```
 

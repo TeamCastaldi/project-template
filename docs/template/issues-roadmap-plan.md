@@ -22,6 +22,7 @@ A user should be able to work with the repo's issue tracker **in conversation** 
 Supporting choices:
 
 - **Bash 3.2.** `sync_labels.sh` and `check_issues.sh` avoid associative arrays and `${var,,}`, as the repo's other scripts do, because macOS ships bash 3.2.
+- **Every `gh` call is `gh api` against REST, and repo-scoped.** In a Claude Code cloud session, `gh issue …`, `gh label …` and `gh repo view` fail with HTTP 403 because they use GraphQL, and the search API is refused because it is not scoped to the repo; `gh api 'repos/{owner}/{repo}/…'` works there, locally and in Actions. Found by running the scripts in such a session. The REST issues endpoint returns pull requests too, so `check_issues.sh` skips anything with a `pull_request` field.
 - **`check_issues.sh` reads only fields `gh` and the REST API share** (`number`, `title`, `state`, `body`, label names), so it works on `gh issue list --json` output and on the connector's `list_issues` output alike.
 - **Blocking writes the reason into the body's `### Dependencies`,** not only a comment, so `check_issues.sh` can tell a blocked issue with a reason from one without.
 - **`check_scaffolded_project.sh` requires the issue files,** so the template's scaffold smoke test proves in CI that `init-project` keeps them.
