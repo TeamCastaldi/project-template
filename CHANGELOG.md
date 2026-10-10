@@ -27,6 +27,8 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-10-10
+
 ### Changed
 
 - `/red-team` covers web and service code, not only cryptography and money movement. The reviewer brief now also lists authorization, untrusted input (injection, path traversal, SSRF), authentication and sessions, payment-webhook and client-amount flaws, and secrets handling, and the reviewer may report a flaw outside the list when the code demonstrably supports one. The output format, the isolated reviewer and the `INSUFFICIENT_CODE_FOR_ANALYSIS` case are unchanged. The `/red-team` entry under 3.0.0 describes the narrower scope as it shipped.
@@ -188,7 +190,8 @@ First versioned release. Everything before this point is unversioned history; `1
 
 - The `version-upgrade-planner` skill. It was specific to one person's home lab rather than to building software, its file was named `version-upgrade-planner-SKILL.md` so it never loaded, and a redundant packaged `.skill` archive sat beside it. The working copy lives in a marketplace, where a personal skill belongs.
 
-[Unreleased]: https://github.com/TeamCastaldi/project-template/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/TeamCastaldi/project-template/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/TeamCastaldi/project-template/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/TeamCastaldi/project-template/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/TeamCastaldi/project-template/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/TeamCastaldi/project-template/compare/v1.1.0...v2.0.0
