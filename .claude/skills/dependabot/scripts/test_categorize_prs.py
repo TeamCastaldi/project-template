@@ -164,6 +164,23 @@ def test_unparseable_version_is_unknown():
     assert "Could not parse" in out["reason"]
 
 
+def test_second_bump_clause_is_not_hidden_by_the_first():
+    """A title that carries two transitions must not be scored on the first one
+    alone. Here the first is a patch and the second is a major; scoring the first
+    would let the major bump through the review gate as Minor/Patch."""
+    out = categorize(pr("Bump lodash from 4.17.20 to 4.17.21 and bump react from 17.0.2 to 18.0.0"))
+    assert out["category"] == "Unknown"
+    assert out["package"] is None
+
+
+def test_single_bump_in_a_directory_still_matches():
+    """Dependabot appends ' in /<dir>' when a repo has several directories. That
+    suffix is not a second transition and must not turn the bump into Unknown."""
+    out = categorize(pr("Bump lodash from 4.17.20 to 4.17.21 in /frontend"))
+    assert out["package"] == "lodash"
+    assert out["category"] == "Minor/Patch"
+
+
 def test_original_fields_are_preserved():
     out = categorize(pr("Bump requests from 2.30.0 to 2.31.0"))
     assert out["number"] == 1 and out["url"] == "u" and out["headRefName"] == "b"

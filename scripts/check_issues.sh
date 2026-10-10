@@ -128,7 +128,7 @@ JQ='
   | (section("dependencies")) as $deps
   | [ (.number | tostring),
       ((.title // "") | clean),
-      ([.labels[]? | if type == "string" then . else .name end] | join("\u001f")),
+      ([.labels[]? | if type == "string" then . else .name end | clean] | join("\u001f")),
       ($boxes | length | tostring),
       ($boxes | map(select(test("\\[[xX]\\]"))) | length | tostring),
       ($deps | join("\n") | [scan("#([0-9]+)")[0]] | reduce .[] as $n ([]; if index([$n]) then . else . + [$n] end) | map("#" + .) | join(",")),
@@ -157,6 +157,10 @@ flag() { flags+=("$(printf '%s\t#%s\t%s' "$1" "$2" "$3")"); n_flags=$((n_flags +
 
 while IFS=$'\x1e' read -r num title labelstr total ticked deps has_reason; do
   [[ -n "$num" ]] || continue
+  # The counts are used in arithmetic, and bash runs any command substitution in an
+  # arithmetic expression. They are digits from jq; anything else is a broken row.
+  [[ "$total" =~ ^[0-9]+$ && "$ticked" =~ ^[0-9]+$ ]] \
+    || { echo "check_issues.sh: issue #$num has a malformed row" >&2; exit 2; }
   IFS=$'\x1f' read -r -a labels <<<"$labelstr"
 
   statuses=() types=() prios=()

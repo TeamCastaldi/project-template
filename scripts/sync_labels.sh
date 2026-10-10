@@ -114,6 +114,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   if [[ "$line" =~ ^-[[:space:]]+name:[[:space:]]*(.*)$ ]]; then
     name="$(unquote "${BASH_REMATCH[1]}")"
     [[ -n "$name" ]] || die_at "$lineno" "empty name"
+    # Sent in the label URL, where a name of only dots is read as a path segment.
+    [[ "$name" =~ ^\.+$ ]] && die_at "$lineno" "name \"$name\" is only dots, which the label API reads as a path"
     if first="$(index_of "$name" ${names[@]+"${names[@]}"})"; then
       die_at "$lineno" "duplicate label \"$name\" (first at line ${starts[first]})"
     fi

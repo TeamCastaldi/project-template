@@ -80,6 +80,14 @@ if [[ -f "$CLAUDE_MD" ]]; then
       | awk '{print $1}'
   )"
 
+  # CLAUDE.md is written by whoever can commit to the repo, and this word is echoed
+  # into session context. Only a plain command name is echoed back; anything else is
+  # reported without its text.
+  if [[ -n "$binary" && ! "$binary" =~ ^[A-Za-z0-9._/+-]+$ ]]; then
+    note "TEST_COMMAND's first word is not a plain command name, so it cannot be checked."
+    binary=""
+  fi
+
   case "$binary" in
     ''|npm|npx|yarn|pnpm|bun|python|python3|uv|uvx|poetry|pipenv|make|go|cargo|dotnet|mvn|gradle|bundle|rake)
       : # wrapper or nothing to check

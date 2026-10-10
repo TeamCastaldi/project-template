@@ -212,6 +212,25 @@ assert_exit "exit 2 on JSON that holds no issue list" 2 "$d" issues.json
 d="$(fixture)"; rm "$d/.github/labels.yml"
 assert_exit "exit 2 when the labels file is missing" 2 "$d" issues.json
 
+# ------------------------------------------------------------ label injection
+
+# A label name holding the row separator used to split one issue's row in two, and
+# the second half reached bash arithmetic as an array subscript, which runs the
+# command substitution inside it. The marker file is what that would create.
+marker="$(mktemp -u -t check-issues-pwned.XXXXXX)"
+# The subscript is written verbatim into the label name; it must not expand here.
+# shellcheck disable=SC2016
+weird="$(printf 'x\x1enum[$(touch %s)]' "$marker")"
+d="$(fixture "$(issue 1 "status:in-progress,type:bug,p1:high,$weird" "$CRIT_OPEN")")"
+run "$d" issues.json
+if has_hit "$out" IN_PROGRESS "#1"; then pass=$((pass + 1)); else
+  fail=$((fail + 1)); echo "FAIL: an issue with a control character in a label is still listed"; indent "$out"
+fi
+if [[ -e "$marker" ]]; then
+  fail=$((fail + 1)); echo "FAIL: a label name ran a command through the row parser"; rm -f "$marker"
+else pass=$((pass + 1)); fi
+rm -rf "$d"
+
 # ---------------------------------------------------------------------- summary
 
 echo "---"
