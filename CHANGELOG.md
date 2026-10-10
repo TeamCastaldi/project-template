@@ -27,6 +27,14 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
+### Fixed
+
+- `session-start-hook.sh` echoes the first word of `TEST_COMMAND` into session context only when it is a plain command name. `CLAUDE.md` is repository text, so any other value is reported without its text.
+- `check_issues.sh` cleans label names the way it already cleaned titles, and refuses a row whose counts are not digits before any arithmetic runs on them.
+- `compare_template.sh` ignores a tooling path that is absolute or contains a `..` segment, so a template cannot point a sync outside the repo.
+- `categorize_prs.py` scores a title only when it holds a single version transition. A title with a second transition is classified `Unknown` for manual review, rather than scored on its first transition alone.
+- `sync_labels.sh` refuses a label whose name is only dots before it calls the label API.
+
 ## [3.0.1] - 2026-10-10
 
 ### Changed
