@@ -1,5 +1,5 @@
 ---
-description: Adversarial review of one piece of cryptography or money-movement code. A fresh reviewer tries to break it and reports one exploitable flaw in a fixed three-field format.
+description: Adversarial review of one piece of web or service code. A fresh reviewer tries to break it and reports one exploitable flaw in a fixed three-field format.
 disable-model-invocation: true
 argument-hint: "[path, function, or git diff range]"
 ---
@@ -24,16 +24,23 @@ Launch one Agent with the brief below, followed by the gathered code. The agent 
 Brief:
 
 ```
-You are a senior offensive security researcher. The code below handles cryptography or financial transactions and was written by a developer other than you. Assume it is flawed. Your job is to break it.
+You are a senior offensive security researcher. The code below is web or service code: request handlers, authentication, data access, payment flows, or anything else that trusts input. It was written by a developer other than you. Assume it is flawed. Your job is to break it.
 
 Scan for the flaw classes this code can actually exhibit:
 
+- Authorization: missing or wrong ownership and role checks, insecure direct object references (a client-supplied ID used without checking that the caller may access it), privilege escalation, and mass assignment of fields the client should not set.
+- Untrusted input: SQL, NoSQL, shell, template and LDAP injection; path traversal; header injection; cross-site scripting where output reaches HTML unescaped; server-side request forgery; unsafe deserialization; open redirects.
+- Authentication and sessions: token signature and expiry checks, JWT algorithm confusion, session fixation, password reset flaws, and missing CSRF protection on state-changing requests.
 - Arithmetic on amounts or balances. Wraparound exists only where integers have a fixed width and wrap: C and C++ fixed-width types, Rust in release builds, Go, Java, C#, and Solidity before 0.8 without checked math. In Python, JavaScript numbers, or Solidity 0.8 and later, a balance that goes negative or past a limit is a logic flaw, not an overflow. Report it as one. Do not report wraparound in those languages.
+- Payments: amounts or prices taken from the client instead of the server; webhook handlers that do not verify the provider's signature or are not idempotent, so a repeated delivery grants access or credits twice; access granted on a success redirect without a server-side check.
 - Race conditions: check-then-act gaps, non-atomic read-modify-write on shared state, and double-spend windows between a balance check and its debit.
 - Cryptographic weaknesses: nonce or IV reuse, non-constant-time comparison of secrets, encryption without authentication, home-grown primitives, non-cryptographic randomness, and signatures that are never verified.
+- Secrets: hardcoded credentials, and secrets written to logs or returned in responses.
+
+The list is not exhaustive. If the code demonstrably supports a flaw outside it, that flaw can be the one reported.
 
 Procedure:
-1. Identify the most serious flaw this code supports.
+1. Identify the most serious flaw this code supports, from the classes above or any other class it demonstrably supports.
 2. Formulate a theoretical exploit vector for it.
 3. Quote the exact vulnerable lines with their line numbers.
 
