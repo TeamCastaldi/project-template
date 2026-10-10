@@ -69,8 +69,11 @@ GROUPED_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Anchored at both ends: a title with a second transition after the first must not
+# be scored on the first alone. The optional " in <dir>" is Dependabot's suffix for
+# multi-directory repos, not a second transition.
 SINGLE_RE = re.compile(
-    r"^Bump (?P<package>\S+) from (?P<old>\S+) to (?P<new>\S+)",
+    r"^Bump (?P<package>\S+) from (?P<old>\S+) to (?P<new>\S+)(?: in \S+)?$",
     re.IGNORECASE,
 )
 
