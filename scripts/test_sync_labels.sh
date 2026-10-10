@@ -139,6 +139,14 @@ d="$(fixture '- name: "status:blocked"
 if logged "$d" '-f|description=Waiting: see "Dependencies"|'; then ok; else bad "a description keeps its colon and escaped quotes" "$d"; fi
 rm -rf "$d"
 
+# A name of only dots goes into the label URL as a path segment, and the API's
+# path resolution treats ".." as the parent. It must be refused before any call.
+d="$(fixture '- name: ".."
+  color: "ededed"
+  description: "x"' '[]')"; run "$d"
+if [[ $code -eq 2 ]] && [[ ! -s "$d/log" ]] && grep -q 'only dots' <<<"$err"; then ok; else bad "a label named only dots is refused before any API call" "$d"; fi
+rm -rf "$d"
+
 d="$(fixture '# a comment
 
 - name: tooling
