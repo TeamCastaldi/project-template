@@ -27,6 +27,10 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
+### Changed
+
+- `/red-team` covers web and service code, not only cryptography and money movement. The reviewer brief now also lists authorization, untrusted input (injection, path traversal, SSRF), authentication and sessions, payment-webhook and client-amount flaws, and secrets handling, and the reviewer may report a flaw outside the list when the code demonstrably supports one. The output format, the isolated reviewer and the `INSUFFICIENT_CODE_FOR_ANALYSIS` case are unchanged. The `/red-team` entry under 3.0.0 describes the narrower scope as it shipped.
+
 ## [3.0.0] - 2026-10-08
 
 **Major.** Six commands no longer start on their own (see the first entry under Changed). Most of the rest came from the skill best-practices review in `docs/template/`; the issue tracking on GitHub Issues replaced a file-based `/roadmap` that never shipped in a release. Edits that fall outside what `/sync-from-template` copies are listed under Migration steps at the end of this section.
