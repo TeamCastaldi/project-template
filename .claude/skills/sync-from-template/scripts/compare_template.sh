@@ -68,6 +68,13 @@ while IFS= read -r line; do
   line="${line#"${line%%[![:space:]]*}"}"
   line="${line%"${line##*[![:space:]]}"}"
   [ -n "$line" ] || continue
+  # The list comes from the template, so an entry must stay inside the repo: no
+  # absolute path and no `..` segment. Anything else is skipped, not followed.
+  case "$line" in
+    /*|..|../*|*/..|*/../*)
+      echo "compare_template.sh: ignoring a tooling path that is not inside the repo" >&2
+      continue ;;
+  esac
   covered=0
   for sp in "${SYNC_PATHS[@]}"; do
     case "$line" in "$sp"|"$sp"/*) covered=1 ;; esac

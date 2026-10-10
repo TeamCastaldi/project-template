@@ -214,6 +214,23 @@ check "a project-only file in a listed directory reports LOCAL_ONLY" "$(printf '
 clone_path="$(sed -n 's/^TEMP_CLONE=//p' <<<"$OUT" | head -n1)"
 [[ -n "$clone_path" && -d "$clone_path" ]] && rm -rf "$clone_path"
 
+# A tooling entry that climbs out of the clone must not be read from the host. The
+# clone is $TMPDIR/sync-from-template.*, so from there ../<this test's dir>/outside
+# is a directory beside this test's own work directory.
+mkdir -p "$WORK/outside"
+printf 'not part of the template\n' > "$WORK/outside/secret.txt"
+printf '../%s/outside\n' "$(basename "$WORK")" \
+  >> "$TEMPLATE/.claude/skills/sync-from-template/tooling_paths.txt"
+git -C "$TEMPLATE" add -A
+git -C "$TEMPLATE" \
+  -c user.email=test@example.invalid -c user.name=test \
+  commit --quiet -m "traversal"
+
+OUT="$("$SUT" "$TEMPLATE" main "$PROJECT" .claude 2>&1)" || true
+clone_path="$(sed -n 's/^TEMP_CLONE=//p' <<<"$OUT" | head -n1)"
+check_absent "a tooling entry that climbs out of the clone is not read" "outside/secret.txt"
+[[ -n "$clone_path" && -d "$clone_path" ]] && rm -rf "$clone_path"
+
 # Too few arguments is a usage error.
 if "$SUT" only two 2>/dev/null; then
   fail=$((fail + 1))
