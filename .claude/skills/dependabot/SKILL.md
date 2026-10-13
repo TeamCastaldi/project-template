@@ -1,163 +1,203 @@
 ---
 name: dependabot
-description: Automate triage and safe consolidation of open Dependabot pull requests in a Git repository using the GitHub CLI (gh). Categorizes each open Dependabot PR by SemVer risk (Major, Minor/Patch, Grouped, or Unknown), cross-checks runtime/base-image bumps against versions pinned elsewhere in the repo, bundles the safe Minor/Patch bumps onto one consolidated branch and PR, and closes the superseded originals only once that PR is verified - while always leaving Major version bumps and Dependabot's own grouped updates open for manual review. Use this skill whenever the user mentions Dependabot PRs, dependency bumps, consolidating or batching dependency updates, cleaning up a repo's open PR queue, or asks to triage, merge, or close a pile of automated dependency pull requests - even if they don't say "Dependabot" by name.
-compatibility: Requires a local git checkout of the target repo, the GitHub CLI (gh) authenticated with repo write access, and Python 3 for the bundled categorization script. Designed for an agent runtime with bash tool access, such as Claude Code.
+description: Audit, recommend on, and act on a backlog of open Dependabot pull requests and dependabot/* branches using the GitHub CLI (gh). Gathers each PR's SemVer risk, CI state, merge conflicts, age, security label and release notes; spots superseded duplicates, stale PRs and orphaned branches; cross-checks runtime/base-image bumps against versions pinned elsewhere in the repo; gives a per-PR verdict (merge, consolidate, rebase, close, review, ignore); then carries out only the actions the user approves - consolidating safe Minor/Patch bumps onto one branch, closing superseded PRs, requesting rebases, enabling auto-merge - while always leaving Major bumps and Dependabot's own grouped updates for a human. Use this skill whenever the user mentions Dependabot PRs or branches, dependency bumps, a pile of automated dependency PRs, reviewing or auditing dependency updates, asking what to do about them, consolidating or batching them, or cleaning up the PR queue - even if they don't say "Dependabot" by name.
+compatibility: Requires a local git checkout of the target repo, the GitHub CLI (gh) authenticated with repo write access, and Python 3 for the bundled scripts. Designed for an agent runtime with bash tool access, such as Claude Code. Where gh is unavailable, the GitHub MCP tools can stand in for the read-only phases.
 ---
 
-# Dependabot PR consolidator
+# Dependabot backlog audit and action
 
 Copy this checklist into your reply and tick it off as you go:
 
 ```
-- [ ] Phase 0: preflight (gh auth, clean tree; note auto-merge)
-- [ ] Phase 1: query open Dependabot PRs
-- [ ] Phase 2: categorize them with the bundled script
-- [ ] Phase 3: cross-check runtime and base-image bumps
-- [ ] Phase 4: build the plan and show it
-- [ ] Phase 5: GATE: wait for the user to reply "consolidate"
-- [ ] Phase 6: build the branch, open the PR, try auto-merge
-- [ ] Phase 7: close superseded PRs only once the consolidated PR is verified
+- [ ] Phase 0: preflight (gh auth, clean tree; note auto-merge, security alerts)
+- [ ] Phase 1: collect open Dependabot PRs and dependabot/* branches
+- [ ] Phase 2: classify and score them with the bundled scripts
+- [ ] Phase 3: investigate (runtime cross-check, major bumps, security, failing CI)
+- [ ] Phase 4: report findings and recommendations (read-only)
+- [ ] Phase 5: GATE: the user picks which recommended actions to run
+- [ ] Phase 6: execute the approved actions
+- [ ] Phase 7: verify before closing anything superseded
 ```
 
 ## Purpose
 
-Open Dependabot PRs pile up fast. Most are low-risk minor or patch bumps
-that are safe to batch together. Some are major version bumps that need a
-human to read the changelog. This skill sorts the pile, merges what is
-safe into one PR, and leaves the rest open with a clear reason.
+Dependabot backlogs grow in ways a single "consolidate the safe ones" pass
+does not cover: PRs that CI has been failing for weeks, duplicates where a
+newer bump replaced an older one, security fixes sitting behind routine
+bumps, majors nobody has read the changelog for, and `dependabot/*` branches
+whose PRs are long gone. This skill reviews the whole queue, says what it
+recommends for each item and why, and then carries out whatever the user
+approves.
+
+Most runs end after Phase 4. The audit is the product; actions are opt-in.
+
+## Modes
+
+Pick the mode from the request. When unsure, run the audit and offer actions.
+
+| The user asks to... | Run |
+|---|---|
+| review, audit, assess, "what should I do about" the PRs | Phases 0-4, then offer Phase 5 |
+| consolidate, clean up, "handle" them | Phases 0-7 |
+| act on a specific item ("close the superseded ones", "rebase #12") | Phases 0-1 for that item, then 5-7 |
 
 ## Non-negotiable constraints
 
 > [!IMPORTANT]
 > Never combine or stack two or more Major version bumps into the
 > consolidated PR. A Major bump always stays on its own, open, for manual
-> review - even if it looks trivial.
+> review - even if it looks trivial. The skill may *research* a major and
+> recommend for or against it; the merge decision stays with the user.
 
 > [!IMPORTANT]
-> Never merge anything directly. This skill only creates the consolidated
-> PR, enables GitHub's native auto-merge on it, or closes a superseded PR.
-> Auto-merge still waits for the repo's required status checks and
-> reviews before it merges anything - it does not bypass CI.
+> Never merge anything directly. The only merge-adjacent action this skill
+> takes is enabling GitHub's native auto-merge, which still waits for the
+> repo's required checks and reviews. It does not bypass CI.
 
 > [!IMPORTANT]
-> This skill's job is consolidating dependency bumps, nothing more. If
-> the consolidated PR's CI fails, do not push new commits to fix it -
-> even a one-line formatting fix, even an issue you're confident is
-> unrelated to the bump. Report the failure and let the user decide
-> (Phase 7). Fixing unrelated repo issues was never in the plan the user
-> confirmed in Phase 5, and doing it anyway is exactly the kind of scope
-> creep this skill exists to avoid.
+> Nothing in the repo's PR queue or branch list changes before the user
+> approves it in Phase 5. Closing a PR, deleting a branch, commenting
+> `@dependabot ...`, opening a PR and enabling auto-merge are all visible
+> changes. Phases 0-4 are strictly read-only.
+
+> [!IMPORTANT]
+> This skill's job is the dependency backlog, nothing more. If a PR's CI
+> fails, do not push commits to fix it - even a one-line formatting fix, even
+> an issue you're confident is unrelated to the bump. Diagnose it, report it,
+> and let the user decide. Fixing unrelated repo issues was never in the plan
+> the user approved.
+
+> [!IMPORTANT]
+> Never close a superseded or consolidated original until its replacement is
+> verified (Phase 7). A PR closed early and then abandoned has no automatic
+> way back, so a good update is silently dropped.
 
 ## Phase 0: Preflight
 
-Run these checks before reading any PRs. Stop and report if a check
-under "Must pass" fails. Checks under "Informational" never block -
-record the result and carry it into the plan.
+Stop and report if a "Must pass" check fails. "Informational" checks never
+block; record the result and carry it into the report.
 
 **Must pass:**
 
-1. Confirm `gh auth status` succeeds. If it does not, tell the user to run
-   `gh auth login` and stop here.
-2. Confirm the local working tree is clean (`git status --porcelain`
-   prints nothing). If it is not, stop and ask the user to commit or
-   stash their changes first. This skill creates and switches branches,
-   and it should never risk carrying the user's uncommitted work onto a
-   branch that later gets deleted on conflict.
+1. `gh auth status` succeeds. If not, tell the user to run `gh auth login`
+   and stop here.
+2. The working tree is clean (`git status --porcelain` prints nothing). If
+   not, stop and ask the user to commit or stash first. Phase 6 may switch
+   branches and should never carry uncommitted work onto one that could be
+   deleted on conflict. (A pure audit never switches branches, but check
+   anyway so an approved action doesn't stall later.)
 
 **Informational:**
 
-3. Resolve the repo's default branch:
+3. Resolve the default branch:
    ```bash
    DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
    ```
-4. Check whether the repo allows auto-merge at all:
+4. Check whether the repo allows auto-merge:
    ```bash
    gh repo view --json autoMergeAllowed -q .autoMergeAllowed
    ```
-   The exact field name has varied across `gh` versions - if this
-   command errors, don't fail preflight over it; just note that
-   auto-merge availability is unknown and will be confirmed when Phase 6
-   tries to enable it. If it returns `false`, carry that forward: the
-   plan in Phase 4 should say up front that any consolidated PR will
-   need a manual merge, instead of that surfacing as a surprise mid-run.
+   The field name has varied across `gh` versions. If it errors, note that
+   availability is unknown and will be confirmed when Phase 6 tries it. If
+   `false`, say so in the Phase 4 report: any PR will need a manual merge.
+5. Read `.github/dependabot.yml` if present: which ecosystems and
+   directories are watched, whether `groups`, `ignore`, `open-pull-requests-limit`
+   or `commit-message.prefix` are set. An `open-pull-requests-limit` that is
+   being hit explains why the queue is stuck; a missing `groups` block
+   explains why it is noisy. Both belong in the recommendations.
 
-## Phase 1: Query open Dependabot PRs
+## Phase 1: Collect
+
+Open PRs, with the fields the audit needs. Use `--limit 100` explicitly:
+the default is 30, and a larger backlog silently looks empty past that.
 
 ```bash
-gh pr list --author "app/dependabot" --state open \
-  --json number,title,url,headRefName --limit 100
+SCRATCH=$(mktemp -d)
+gh pr list --author "app/dependabot" --state open --limit 100 \
+  --json number,title,url,headRefName,createdAt,updatedAt,mergeable,mergeStateStatus,reviewDecision,labels,statusCheckRollup \
+  > "$SCRATCH/prs.json"
 ```
-
-Use `--limit 100` explicitly. The default limit is 30, and a repo with a
-larger backlog will silently look empty past that.
 
 > [!NOTE]
 > If this returns nothing but the user is sure PRs exist, retry with
-> `--author "dependabot[bot]"` - the accepted author string has varied
-> across `gh` versions and GitHub Apps configurations.
+> `--author "dependabot[bot]"` - the accepted author string has varied across
+> `gh` versions and GitHub Apps configurations. If a field is rejected by an
+> older `gh`, drop it; the scripts treat every missing signal as unknown.
 
-If the query returns an empty list, respond exactly:
+If more than 100 PRs come back, say the list may be truncated and offer to
+page the rest.
+
+Remote branches, to find orphans:
+
+```bash
+git fetch origin --prune
+git for-each-ref --format='%(refname:short) %(committerdate:short)' refs/remotes/origin/dependabot/
+```
+
+An **orphan** is a `origin/dependabot/*` branch whose name matches no open
+PR's `headRefName`. Dependabot normally deletes these itself, so a few mean
+something went wrong (a PR closed by hand, a failed run).
+
+If there are no open PRs *and* no `dependabot/*` branches, respond exactly:
 
 ```
 No open Dependabot PRs found. Exiting.
 ```
 
-Stop here in that case. Do not proceed to later phases.
+Stop here in that case.
 
-## Phase 2: Categorize each PR by SemVer risk
+## Phase 2: Classify and score
 
-Pipe the JSON from Phase 1 into the bundled script, from the repo root:
+Pipe the JSON through both scripts, from the repo root:
 
 ```bash
-gh pr list --author "app/dependabot" --state open \
-  --json number,title,url,headRefName --limit 100 \
-  | python3 .claude/skills/dependabot/scripts/categorize_prs.py
+python3 .claude/skills/dependabot/scripts/categorize_prs.py < "$SCRATCH/prs.json" \
+  | python3 .claude/skills/dependabot/scripts/audit_prs.py > "$SCRATCH/audit.json"
 ```
 
-It prints the same array back with `package`, `old_version`, `new_version`,
-`category` and `reason` added to each PR. It never touches git or the network
-and never sees repo contents; that is Phase 3's job.
+Use the scripts rather than judging titles, versions or check results by
+eye. Neither touches git, GitHub or the network.
 
-Use the script rather than eyeballing version numbers or titles by hand.
-It handles several cases that are easy to get wrong under time pressure:
+`categorize_prs.py` assigns `category` (it only reads the title):
 
-- A pre-1.0 package (`0.x.y`) has no stability guarantee below `1.0`, so
-  a change in the minor number is scored `Major`, not `Minor/Patch`.
-- GitHub Actions are commonly tagged `v2`, `v3` rather than `2.0.0` - the
-  script strips the leading `v` before comparing.
-- A repo that pairs Dependabot with a Conventional-Commits release tool
-  (release-please, semantic-release) often prefixes PR titles with
-  `chore(deps): ` or similar. The script strips that prefix before
-  matching, so it doesn't need to be normalized by hand mid-run.
-- A requirement-range widening (`Update mcp requirement from <2,>=1.28.1
-  to >=1.28.1,<3`) is a distinct Dependabot title shape with no single
-  old/new version to compare - it is always `Unknown`, never guessed at.
+- `Major` - includes a pre-1.0 *minor* bump (`0.4.x` to `0.5.x`), since
+  SemVer promises nothing below 1.0.
+- `Minor/Patch` - the package's own SemVer promise only; Phase 3 checks
+  whether this repo can tolerate it.
+- `Grouped` - Dependabot's own grouped update. Left intact: it was tested as
+  a combination, and picking it apart forfeits that.
+- `Unknown` - an unrecognised title, an unparseable version, or a
+  requirement-range widening (`Update mcp requirement from <2,>=1.28.1 to
+  >=1.28.1,<3`) with no single old/new pair. Never guess a risk level.
 
-`Grouped` PRs are Dependabot's own grouped-update PRs. Leave these alone
-rather than decomposing them - Dependabot already tested that combination
-of packages together, and picking it apart forfeits that guarantee.
+It handles GitHub Actions `v3` style tags and strips a Conventional-Commits
+prefix such as `chore(deps): `.
 
-`Unknown` PRs are anything the script could not confidently classify.
-Route these to manual review. Never guess a risk level for a title or
-version string the script did not recognize.
+`audit_prs.py` adds `ci`, `conflict`, `behind`, `age_days`, `security`,
+`superseded_by`, `ecosystem`, `directory`, `signals`, and a `recommendation`:
 
-## Phase 3: Cross-reference check for runtime and base-image bumps
+| `recommendation` | Meaning | Typical action |
+|---|---|---|
+| `merge-candidate` | Minor/Patch, clean, CI green or absent | consolidate, or auto-merge if alone |
+| `wait` | Minor/Patch, CI still running | revisit; do not act yet |
+| `rebase` | Minor/Patch, conflicting or behind base | `@dependabot rebase` |
+| `investigate-ci` | Minor/Patch, CI failing | diagnose and report (Phase 3) |
+| `close-superseded` | A newer open PR bumps the same package further | close with a pointer |
+| `review-major` | Major or pre-1.0 minor | research, then the user decides |
+| `review-grouped` | Dependabot's own group | review whole; merge or leave |
+| `manual-review` | Not classifiable | a human reads it |
 
-> [!WARNING]
-> `Minor/Patch` from Phase 2 describes the *package's own* SemVer
-> promise. It does not know whether this specific repo can tolerate the
-> change. Do not treat it as a final answer for every kind of package.
+The recommendation is a starting point, not a verdict. Phase 3 can overturn it.
 
-This matters most for language runtimes and Docker base images - `python`,
-`node`, `ruby`, or any package whose title contains `-slim`, `-alpine`, or
-a bare version tag rather than an application dependency. These often
-look like an ordinary minor bump while conflicting with a version pinned
-somewhere else in the repo: a linter's `target-version`, a type checker's
-configured version, a `.python-version` / `.nvmrc` / `.tool-versions`
-file, or a CI workflow that hardcodes the version.
+## Phase 3: Investigate
 
-For each `Minor/Patch` PR that bumps a runtime or base image (not a
-regular library), search the repo before trusting the classification:
+Do this only for the items that need it, and say what you checked. With many
+PRs, work the highest-risk ones first: security, then majors, then failing CI.
+
+**Runtime and base-image bumps (`merge-candidate` only).** `Minor/Patch`
+describes the package's promise, not whether this repo tolerates the change.
+For a language runtime or Docker base image (`python`, `node`, `ruby`, any
+`-slim` / `-alpine` tag), search for conflicting pins:
 
 ```bash
 grep -rn -E "python[_-]?version|target-version|pythonVersion|FROM python" \
@@ -165,74 +205,140 @@ grep -rn -E "python[_-]?version|target-version|pythonVersion|FROM python" \
   --include='.python-version' .
 ```
 
-(Adjust the pattern to the runtime in question - `node`/`.nvmrc`,
-`ruby`/`.ruby-version`, and so on.) If any match pins a version that the
-bump's target would violate, downgrade that PR's disposition to
-`Unknown`, and name the conflicting file and setting in the reason (for
-example: "conflicts with `pyproject.toml`'s `ruff target-version =
-\"py312\"` and `pyright pythonVersion = \"3.12\"`").
+Adjust the pattern for the runtime (`node`/`.nvmrc`, `ruby`/`.ruby-version`,
+`.tool-versions`, CI workflows that hardcode a version). If a pin would be
+violated, downgrade the PR to `manual-review` and name the file and setting,
+for example: "conflicts with `pyproject.toml`'s `ruff target-version =
+\"py312\"`". The grep only catches what a grep can; when you are not
+confident it was thorough, lean toward `manual-review`.
 
-This is a heuristic, not a guarantee - it only catches conflicts a grep
-can find, not deeper semantic incompatibilities. When a bump changes a
-language, runtime, or base image and you are not confident this check
-was thorough, lean toward `Unknown` rather than `Minor/Patch`.
+Ordinary libraries and GitHub Actions don't need this check.
 
-Ordinary application libraries (an npm package, a Python package that
-isn't the interpreter itself, a GitHub Action) don't need this check -
-their version numbers aren't referenced elsewhere in the repo the way a
-pinned toolchain version is.
-
-## Phase 4: Build the consolidation plan
-
-From the categorized (and cross-checked) list, build a plan:
-
-- **Include** every PR still classified `Minor/Patch` after Phase 3.
-- **Leave open** every `Major`, `Grouped`, and `Unknown` PR, each with its
-  reason.
-
-Present this plan to the user as a short table or list before touching
-any repository state - PR number, package, version change, category, and
-what will happen to it. Include the Phase 0 auto-merge finding here too,
-if it came back `false`. This is the point to catch anything that looks
-off before Phase 5 starts making changes.
-
-If no PR qualifies for `Minor/Patch`, say so plainly, list every PR under
-"left open" with its reason, and stop. Do not create an empty
-consolidated PR.
-
-**If exactly one PR qualifies**, say so explicitly and flag that
-consolidating it adds no real value: it just closes that PR and reopens
-the identical change under a new branch and PR number, for no reduction
-in PR count. Propose the simpler alternative instead - enable auto-merge
-directly on that PR, with no new branch:
+**Security (`security: true`).** A security PR outranks every routine bump,
+including ahead of an older, quieter queue. Look up what it fixes:
 
 ```bash
-gh pr merge <NUM> --auto --squash
+gh pr view <NUM> --json body -q .body
 ```
 
-If repo-level auto-merge is unavailable (per Phase 0), say so and leave
-the single PR open for a manual merge; a consolidation branch would add
-process without adding any capability the original PR doesn't already
-have. Skip Phases 6-7 entirely in the single-PR case either way.
+Dependabot's PR body names the advisory (GHSA/CVE) and severity. Report
+those. If a security PR is also `review-major`, say so prominently: it is the
+case where waiting has a cost, and the user should hear it first.
 
-**If two or more PRs qualify**, proceed to Phase 5 for the full
-consolidation flow.
+**Major bumps (`review-major`).** The aim is to let the user decide in a
+minute, not to make the decision. For each:
+
+1. Read the release notes and changelog in the PR body (`gh pr view <NUM>
+   --json body -q .body`), looking for removed or renamed APIs, dropped
+   runtime versions and changed defaults.
+2. Check whether the repo uses the affected surface at all:
+   `grep -rn "<package>" --include=...`. A major bump of a library imported
+   in one test file is a different risk from one imported in forty modules.
+3. Check CI: a green run on a major raises confidence but does not close the
+   question, because CI only covers what the tests cover.
+4. Give a call: **low-risk, probably just merge** / **needs a migration
+   (name it)** / **not worth it yet** - with the evidence. If evidence is
+   thin, say "could not determine" rather than guessing.
+
+**Failing CI (`investigate-ci`).** Find out whether the failure comes from
+the bump or was already there:
+
+```bash
+gh pr checks <NUM>
+gh run view <RUN_ID> --log-failed | head -80
+```
+
+Compare with the default branch's latest run. If the default branch is red
+too, the failure is not the PR's and the answer is "fix the base first". If
+only this PR fails, name the test and the likely cause. Do not push a fix.
+
+**Superseded (`close-superseded`).** Confirm that the superseding PR is open
+and is not itself a failing or conflicting one - closing a good-but-older PR
+in favour of a broken newer one loses the working option. If the newer one is
+broken, say so and recommend keeping the older.
+
+**Stale (`signals` containing `open Nd`).** A Dependabot PR open for more
+than ~45 days has usually been passed over on purpose or forgotten. For each,
+ask which it is: if it is a major nobody wants, recommend closing with
+`@dependabot ignore this major version`; if it is just unreviewed, say so.
+
+**Orphan branches.** For each, check the last commit date and whether the
+branch has any commits beyond the default branch
+(`git log origin/$DEFAULT_BRANCH..origin/<branch> --oneline`). An orphan with
+no PR is safe to propose for deletion; one with unmerged non-Dependabot
+commits is not - flag it instead.
+
+**Config observations.** From Phase 0 step 5, note things that would reduce
+the backlog at the source: no `groups` block, ecosystems with no coverage,
+an `open-pull-requests-limit` being hit, an `ignore` rule that is stale.
+Recommend them as `.github/dependabot.yml` changes, but make no edits here -
+that is a separate change the user can ask for.
+
+## Phase 4: Report
+
+Present the findings read-only. Lead with what matters, not with a table of
+everything. Order: security items, then anything blocking or broken, then the
+routine bulk.
+
+```markdown
+## Dependabot audit: <repo> - <N> open PRs, <M> orphan branches
+
+**Needs attention first**
+- #41 (security, HIGH) pillow 10.1 to 10.3 - fixes GHSA-xxxx; CI green. Recommend: merge now.
+- #37 (security) django 4.2 to 5.0 - Major. Fixes CVE-xxxx. Release notes drop Python 3.9; repo pins 3.12, so fine. Recommend: merge after a manual look.
+
+**Recommended actions**
+| # | Package | Change | Category | CI | Recommendation | Why |
+|---|---------|--------|----------|----|----------------|-----|
+| 52 | requests | 2.30 to 2.31 | Minor/Patch | pass | consolidate | clean |
+| ... | | | | | | |
+
+**Leave open for a human:** #44 (react 17 to 18 - Major; ...)
+**Stuck:** #39 (CI failing on `test_parser`; default branch is green, so this PR's)
+**Orphan branches:** dependabot/pip/old-1.2 (last commit 2026-04-01, no PR)
+**Config:** no `groups` block, so each patch opens its own PR...
+**Auto-merge:** repo setting is off; merges will be manual.
+```
+
+Keep every claim traceable: say "could not determine" for anything you did
+not check. State what happened, not what might have happened.
+
+If nothing qualifies for any action, say so plainly and stop.
 
 ## Phase 5: Confirmation gate
 
 > [!IMPORTANT]
-> Do not proceed past this point until the user confirms. Phase 6
-> creates a branch and a PR and attempts auto-merge; Phase 7 later closes
-> other PRs - all real, visible changes to the repo's PR queue. Show the
-> plan from Phase 4, then ask the user to reply **"consolidate"** to
-> proceed, or tell you what to change.
+> Do not proceed until the user confirms. End the report with the concrete
+> actions available, numbered, and ask which to run. Example:
 
-Skip this gate only if the user's own request already made unattended
-execution explicit (for example, "run this end to end, no need to check
-in" or an equivalent instruction given before this skill started). When
-in doubt, gate it.
+```
+Actions I can take - reply with numbers, "all", or tell me what to change:
+  1. Consolidate #52, #53, #55 onto one branch and PR (3 Minor/Patch)
+  2. Enable auto-merge on #41 (security; CI green)
+  3. Close #48 and #50 as superseded by #51
+  4. Comment "@dependabot rebase" on #39
+  5. Delete 2 orphan branches
+Not offered: #44 and #37 (Major) - your call after reading the notes above.
+```
 
-## Phase 6: Build the consolidated branch and open the PR
+An instruction such as "run this end to end" or "just do it" given before
+the audit counts as approval for the actions the audit recommends, but never
+for Major bumps, which are always the user's call. When in doubt, gate it.
+
+Replying "consolidate" approves action 1 alone.
+
+## Phase 6: Execute the approved actions
+
+Run only what was approved, one action at a time, reporting each result.
+
+### Consolidate Minor/Patch bumps
+
+With exactly one `merge-candidate`, consolidating adds nothing - it closes a
+PR and reopens the identical change under a new number. Enable auto-merge on
+it directly (`gh pr merge <NUM> --auto --squash`), or leave it for a manual
+merge if the repo disallows auto-merge, and skip the rest of this section.
+
+With two or more:
 
 ```bash
 TIMESTAMP=$(date +%s)
@@ -241,8 +347,7 @@ git fetch origin "$DEFAULT_BRANCH"
 git switch -c "$BRANCH" "origin/$DEFAULT_BRANCH"
 ```
 
-For each included PR, in ascending PR number order (deterministic, and
-matches the order Dependabot opened them):
+For each included PR, in ascending PR number:
 
 ```bash
 git fetch origin "pull/${NUM}/head"
@@ -250,119 +355,93 @@ BASE=$(git merge-base HEAD FETCH_HEAD)
 git cherry-pick "${BASE}..FETCH_HEAD"
 ```
 
-Cherry-picking the commit range (not just the tip commit) handles the
-rare Dependabot PR with more than one commit, while still applying only
-that PR's own changes.
+Cherry-picking the range handles the rare multi-commit Dependabot PR while
+applying only that PR's own changes.
 
-**On any conflict**: abort immediately (`git cherry-pick --abort`),
-switch back to `$DEFAULT_BRANCH`, delete the temporary branch
-(`git branch -D "$BRANCH"`), and tell the user which package's PR
-conflicted. Do not try to resolve it or skip that PR and continue -
-the whole batch was presented to the user as one plan in Phase 4, so
-partially applying it would ship something they did not approve. Nothing
-has been pushed at this point, so the original PRs are untouched.
-
-Push the branch and open the PR:
+**On any conflict:** `git cherry-pick --abort`, switch back to
+`$DEFAULT_BRANCH`, `git branch -D "$BRANCH"`, and tell the user which package
+conflicted. Do not resolve it or skip that PR and continue - the batch was
+approved as a whole, and nothing has been pushed, so the originals are
+untouched.
 
 ```bash
 git push -u origin "$BRANCH"
-PR_URL=$(gh pr create \
-  --base "$DEFAULT_BRANCH" \
-  --head "$BRANCH" \
-  --title "chore: consolidate N safe Dependabot updates" \
-  --body "$CONSOLIDATION_BODY")
+PR_URL=$(gh pr create --base "$DEFAULT_BRANCH" --head "$BRANCH" \
+  --title "chore: consolidate N safe Dependabot updates" --body "$CONSOLIDATION_BODY")
 NEW_PR_NUMBER=$(basename "$PR_URL")
-```
-
-Build `CONSOLIDATION_BODY` as a short list of the included PRs (number,
-package, version change) so the consolidated PR is traceable back to the
-originals it replaces.
-
-Attempt auto-merge:
-
-```bash
 gh pr merge "$NEW_PR_NUMBER" --auto --squash
 ```
 
-If this fails because the repo doesn't allow auto-merge, that's not a
-fatal error - note it plainly (the consolidated PR still reduces N
-originals to one PR to review) and carry the "needs a manual merge"
-status into Phase 7 and the final report.
+`CONSOLIDATION_BODY` lists the included PRs (number, package, version change)
+so the new PR traces back to what it replaces. If auto-merge fails because
+the repo disallows it, that is not fatal; note "manual merge required". Any
+other `gh pr create` / `gh pr merge` failure (branch protection, required
+reviews): report the exact error and stop.
 
-If `gh pr create` or `gh pr merge` fails for any other reason (branch
-protection, missing required reviews), report the exact `gh` error and stop.
+**Do not close any original here.** See Phase 7.
 
-**Do not close any original PR in this phase**, regardless of whether
-auto-merge was enabled. See Phase 7 for why.
+### Other actions
 
-## Phase 7: Verify before closing superseded PRs
+- **Enable auto-merge on a single PR:** `gh pr merge <NUM> --auto --squash`.
+  Only for a `merge-candidate` or an approved security PR with green CI.
+- **Close a superseded PR** (the replacement must be open and healthy per
+  Phase 3): `gh pr close <NUM> --comment "Superseded by #<NEWER>."`
+- **Request a rebase:** `gh pr comment <NUM> --body "@dependabot rebase"`.
+  If a PR is badly conflicted, `@dependabot recreate` rebuilds it from
+  scratch, but discards any manual edits to it, so use it only when the
+  user approves that specifically.
+- **Ignore a dependency or major version** (a user decision about a specific
+  PR, never inferred): `gh pr comment <NUM> --body "@dependabot ignore this major version"`
+  (or `ignore this minor version`, `ignore this dependency`), then close with
+  a comment saying why. Dependabot records the ignore, so the PR does not come
+  back.
+- **Delete orphan branches:** `git push origin --delete <branch>`, one at a
+  time, each only if Phase 3 found no unmerged non-Dependabot commits.
 
-> [!IMPORTANT]
-> Close a superseded original only once the consolidated PR is confirmed
-> good - not immediately after creating it. A PR that's closed here and
-> then needs to be abandoned later (failed CI, a legitimate objection
-> found in review) has no automatic way back: Dependabot doesn't reliably
-> reopen a PR it wasn't the one to close, so the "safe" update is
-> effectively dropped until someone notices and re-proposes it. Closing
-> early trades a real safety net for a cosmetic PR-count reduction.
+Any `gh` error: report the exact message and stop that action. Do not retry
+by a different route that goes beyond what the user approved.
 
-Check the consolidated PR's status:
+## Phase 7: Verify before closing consolidated originals
 
 ```bash
 gh pr checks "$NEW_PR_NUMBER"
 ```
 
-- **CI is green, and no automated reviewer (Copilot or similar) has
-  raised an unresolved objection**: close the superseded originals now.
-  ```bash
-  gh pr close "$NUM" --comment "Superseded by consolidated PR #${NEW_PR_NUMBER}."
-  ```
-  Only close PRs that actually made it into the consolidated branch in
-  Phase 6. A PR left open in Phase 4 stays open - it was never
-  superseded.
-- **CI is still running**: don't block the session waiting on it. If the
-  runtime supports scheduling a follow-up (a reminder, a scheduled
-  task), use it to check back later; otherwise, report that closure is
-  pending on CI and needs a follow-up check. Leave the originals open in
-  the meantime.
-- **CI fails**: do not push a fix, per the constraint at the top of this
-  skill - not even for a change you're confident is unrelated to the
-  bump. Report the failure plainly, note whether it looks related to the
-  dependency bump itself or to something pre-existing, and leave the
-  superseded originals open. Ask the user how they want to proceed
-  (fix and retry, close the consolidated PR, or handle case by case).
-- **An automated reviewer raises a substantive objection** (for example,
-  a version now conflicts with something pinned elsewhere in the repo,
-  echoing the check in Phase 3): treat this the same as a CI failure -
-  don't push a fix unilaterally. Surface the finding to the user and get
-  their decision before closing anything or taking further action on the
-  consolidated PR.
+- **CI green, and no automated reviewer has an unresolved objection:** close
+  each original that actually made it into the branch:
+  `gh pr close "$NUM" --comment "Superseded by consolidated PR #${NEW_PR_NUMBER}."`
+  A PR that was left out stays open - it was never superseded.
+- **CI still running:** don't block the session. Use a scheduled follow-up if
+  the runtime supports one; otherwise report that closure is pending and
+  needs a re-check. Leave the originals open meanwhile.
+- **CI fails:** do not push a fix. Report it plainly, say whether it looks
+  related to the bump or pre-existing, leave the originals open, and ask how
+  to proceed (fix and retry, close the consolidated PR, or case by case).
+- **An automated reviewer raises a substantive objection** (for example a
+  version now conflicting with something pinned elsewhere): treat it like a
+  CI failure. Surface it and get a decision before closing anything.
 
 ## Output format
 
-On completion, report using this structure, including only the lines
-that apply to this run:
+After acting, report using only the lines that apply:
 
 ```markdown
 - **Consolidated PR Created:** #102 (chore/consolidate-dependabot-updates-1715000000) - *Auto-merge enabled*
+- **Auto-merge Enabled Directly:** #41 (pillow 10.1 to 10.3, security) - *no consolidation branch; only one qualified*
 - **PRs Closed:** #98 (setup-buildx-action), #99 (python-runtime)
-- **PRs Left Open:** #97 (setup-qemu-action v2 to v3 - Major bump)
+- **Closed as Superseded:** #48, #50 (by #51)
+- **Rebase Requested:** #39
+- **Branches Deleted:** dependabot/pip/old-1.2
+- **PRs Pending Closure:** #4 (python 3.12-slim to 3.14-slim) - closes once #102's CI is green
+- **PRs Left Open:** #97 (setup-qemu-action v2 to v3 - Major; needs review)
+- **Needs Your Decision:** #102 - CI failed on "Lint, format, test"; not auto-fixed (out of scope). Originals left open.
 ```
 
-Other lines to use when they apply, in place of or alongside the above:
-
-```markdown
-- **Consolidated PR Created:** #10 (chore/consolidate-dependabot-updates-1788011404) - *Auto-merge unavailable (repo setting disabled); manual merge required*
-- **PRs Pending Closure:** #4 (python 3.12-slim to 3.14-slim) - closes once #10's CI is green
-- **Auto-merge Enabled Directly:** #4 (python 3.12-slim to 3.14-slim) - *no consolidation branch created; only one PR qualified*
-- **Needs Your Decision:** #10 - CI failed on "Lint, format, test"; not auto-fixed (out of scope for this skill). Original PR #4 left open pending your call.
-```
-
-If no PRs qualified for consolidation (Phase 4), skip the first line and
-report only what was left open and why.
+When the run was an audit only, the Phase 4 report is the output; end by
+restating the numbered actions still available.
 
 ## Tone
 
-Professional, cautious, and exact. The person reading this is the
-engineer who invoked the skill and will act on what it reports -
-state what happened, not what might have happened.
+Professional, cautious, and exact. The reader is the engineer who invoked the
+skill and will act on what it reports - state what happened and what you
+verified, and separate that from what you inferred.

@@ -4,12 +4,13 @@
     {
       "id": 1,
       "prompt": "There are nine open Dependabot PRs on this repo and most of them look like patch bumps. Can you clean them up?",
-      "expected_output": "The dependabot skill runs its Phase 0 preflight before reading any PRs, categorizes them with the bundled script, presents a consolidation plan, and stops for the user to reply \"consolidate\" before changing anything.",
+      "expected_output": "The dependabot skill runs its Phase 0 preflight before reading any PRs, classifies them with the bundled scripts, reports an audit with a recommendation per PR, and stops at a numbered list of actions for the user to approve before changing anything.",
       "assertions": [
         "The dependabot skill is invoked",
         "gh auth status and git status --porcelain run before gh pr list",
-        "If any PRs are found, they are categorized by running .claude/skills/dependabot/scripts/categorize_prs.py, not by reading titles by hand",
-        "No branch is created, no PR is opened and no PR is closed before the user replies consolidate"
+        "If any PRs are found, they are classified by running categorize_prs.py and audit_prs.py from .claude/skills/dependabot/scripts/, not by reading titles by hand",
+        "The reply gives each PR a recommendation with a reason, and offers numbered actions",
+        "No branch is created, no PR is opened, commented on or closed, and no branch is deleted before the user approves an action"
       ]
     },
     {
@@ -30,6 +31,30 @@
         "The run stops before gh pr list is executed",
         "The reply names the failing preflight check and the action the user should take",
         "No branch is created or switched to"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We have a ton of dependabot branches piling up. Can you review them, tell me what you'd do with each one, and then do it?",
+      "expected_output": "The skill audits the backlog read-only (including orphan dependabot/* branches), recommends per item, then stops at the confirmation gate instead of acting on its own recommendations, since 'do it' came before the user saw any of them.",
+      "assertions": [
+        "The dependabot skill is invoked",
+        "Orphan origin/dependabot/* branches with no open PR are looked for, not only open PRs",
+        "A Major bump is recommended on or against but is never offered for consolidation or merged",
+        "The skill stops at a numbered list of actions and waits for approval before closing, commenting, deleting or merging anything",
+        "A failing-CI PR is diagnosed and reported, and no fix is pushed to it"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Dependabot opened #20 bumping requests 2.30 to 2.31 and #21 bumping requests 2.30 to 2.32. Close whichever one is redundant.",
+      "expected_output": "The skill identifies #20 as superseded by #21, checks that #21 is open and not failing or conflicting, and closes #20 with a comment pointing at #21. It does not consolidate and does not touch #21.",
+      "assertions": [
+        "The dependabot skill is invoked",
+        "#20 is identified as superseded by #21 using audit_prs.py or an equivalent version comparison",
+        "#21's CI and mergeability are checked before #20 is closed",
+        "#20 is closed with a comment naming #21",
+        "No consolidation branch is created and #21 is left open"
       ]
     }
   ]

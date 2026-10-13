@@ -92,6 +92,8 @@ skill-creator's documented layout puts run output in a `<name>-workspace/` folde
 | `dependabot` | 1 | A repo with `gh` authenticated. An empty Dependabot queue is fine; the skill should still preflight first. |
 | `dependabot` | 2 | A repo that has `requirements-dev.txt`. |
 | `dependabot` | 3 | Any repo, after creating an uncommitted file, for example `echo note > scratch.md`. |
+| `dependabot` | 4 | A repo with several open Dependabot PRs and `gh` authenticated. Nothing should change; close nothing a run proposes. |
+| `dependabot` | 5 | A repo with two open PRs bumping the same package. Case 5 closes a PR, so use a throwaway repo. |
 | `docs-updater` | 1–3 | The `python-cli` project above, with the `export` command from case 1's fixture committed: in the project, run `git am .claude/skills/docs-updater/evals/files/export-command.patch`. Cases 2 and 3 don't use it, and it doesn't affect them. |
 | `init-project` | 1, 3 | A fresh clone of the template. They do not apply in a project. |
 | `init-project` | 2 | An initialized project. |

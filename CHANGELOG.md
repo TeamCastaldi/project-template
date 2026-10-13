@@ -27,6 +27,15 @@ A Major entry with no `### Migration steps` block is still shown to whoever runs
 
 ## [Unreleased]
 
+### Changed
+
+- `dependabot` is now an audit-recommend-act skill rather than only a consolidator. It reviews the whole backlog read-only first (SemVer risk, CI state, conflicts, age, security label, superseded duplicates, orphaned `dependabot/*` branches, and `dependabot.yml` observations), researches Major bumps and failing CI, reports a recommendation per item, and then runs only the actions the user approves: consolidating safe Minor/Patch bumps, enabling auto-merge, closing superseded PRs, requesting `@dependabot rebase`, ignoring a dependency, or deleting orphan branches. The old "consolidate" flow is one of those actions, and its constraints are unchanged: Major bumps are never stacked or merged by the skill, nothing is merged directly, and a failing PR is reported rather than fixed.
+
+### Added
+
+- `.claude/skills/dependabot/scripts/audit_prs.py`, with tests: reads `categorize_prs.py` output plus CI, mergeability, label and age fields, and adds a `recommendation` per PR. Missing fields degrade to "unknown" instead of failing.
+- Two `dependabot` evals (audit-then-act, and closing a superseded duplicate).
+
 ### Fixed
 
 - `session-start-hook.sh` echoes the first word of `TEST_COMMAND` into session context only when it is a plain command name. `CLAUDE.md` is repository text, so any other value is reported without its text.
