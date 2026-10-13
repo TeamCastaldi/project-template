@@ -26,7 +26,7 @@ Every command, skill and hook in this folder, one line each. `/sync-template` ch
 | Command | `/session-end` | Write the session snapshot, run the test and lint gate, then commit and push behind confirmations |
 | Command | `/session-start` | Scan repo state and history, pick a mission, and work it one verified step at a time |
 | Command | `/sync-template` | Audit folders, READMEs and tooling for drift from each other, then fix it |
-| Skill | `dependabot` | Triage open Dependabot PRs by SemVer risk and consolidate the safe ones |
+| Skill | `dependabot` | Audit a backlog of Dependabot PRs and branches, recommend per item, and act on what you approve (consolidate, close superseded, rebase, auto-merge) |
 | Skill | `docs-updater` | Bring READMEs and `CLAUDE.md` up to date with work a session completed |
 | Skill | `init-project` | One-time setup interview and scaffolding for a fresh clone |
 | Skill | `issue-tracker` | File, find, start, block and close the repo's GitHub Issues from ordinary conversation |
